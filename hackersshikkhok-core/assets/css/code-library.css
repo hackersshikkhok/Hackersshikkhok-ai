@@ -1,0 +1,14 @@
+.hs-code-card {
+  background: #0b1120;
+  border: 1px solid rgba(0, 245, 212, 0.22);
+  border-radius: 12px;
+  padding: 1.25rem;
+  color: #e2e8f0;
+}
+.hs-code-pre {
+  font-family: 'JetBrains Mono', monospace;
+  background: #050811;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+}

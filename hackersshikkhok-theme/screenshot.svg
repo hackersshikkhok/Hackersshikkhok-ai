@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900">
+  <defs>
+    <linearGradient id="cyberBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050811"/>
+      <stop offset="55%" stop-color="#0b1120"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="cyberNeon" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f5d4"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#cyberBg)" stroke="url(#cyberNeon)" stroke-width="8"/>
+  <rect x="48" y="48" width="1104" height="56" rx="12" fill="#0b1120" stroke="#00f5d4" stroke-opacity="0.4"/>
+  <text x="80" y="83" fill="#f43f5e" font-family="sans-serif" font-weight="800" font-size="22">🔴 লাইভ নোটিশ · HACKERSSHIKKHOK.COM — Hackers শিক্ষক</text>
+  <rect x="48" y="136" width="1104" height="360" rx="24" fill="#0b1120" stroke="url(#cyberNeon)" stroke-width="3"/>
+  <text x="96" y="220" fill="#00f5d4" font-family="monospace" font-weight="700" font-size="24">Hackers শিক্ষক · OFFICIAL WORDPRESS THEME v4.0.0</text>
+  <text x="96" y="290" fill="#ffffff" font-family="sans-serif" font-weight="800" font-size="52">Hackers শিক্ষক 2040 Cyber Theme</text>
+  <text x="96" y="355" fill="#94a3b8" font-family="sans-serif" font-size="26">28 Platform Centers · Universal Social · Creator Studio · Device Lab · Games · 60+ Tools</text>
+  <text x="96" y="430" fill="#00f5d4" font-family="sans-serif" font-weight="700" font-size="28">Developed by Hackers শিক্ষক · https://hackersshikkhok.com</text>
+</svg>

@@ -1,0 +1,34 @@
+/*
+Theme Name:        Hackers শিক্ষক 2040 Cyber & Coding Hub Theme
+Theme URI:         https://hackersshikkhok.com
+Author:            Developed by Hackers শিক্ষক
+Author URI:        https://hackersshikkhok.com
+Description:       Hackers শিক্ষক (HackersShikkhok.com | YouTube: @HackersShikkhok)-এর অফিসিয়াল ২০৪০ ফিউচারিস্টিক সাইবার-নিয়ন ও কোডিং হাব ওয়ার্ডপ্রেস থিম (v4.0.0)। এই থিমে রয়েছে লাইভ নোটিশ বার (🔴 লাইভ নোটিশ), ওয়ালেট ও পয়েন্ট বার (👛 ব্যালেন্স ও পয়েন্ট), ২৮টি প্ল্যাটফর্ম সেন্টার লেআউট, ১০টি থিম কালার প্রিসেট, ১০টি কার্ড স্টাইল, ১৫টি ইন্টারঅ্যাক্টিভ CSS/RGB/Neon জেনারেটর ইউআই, স্যান্ডবক্সড লাইভ কোড ডেমো ভিউ, ৬০+ ডেভেলপার ও মিডিয়া টুলস সেন্টার, ক্রিয়েটর স্টুডিও, ডিভাইস ল্যাব, গেমস সেন্টার, ফ্লোটিং মায়া চ্যাট এবং নিচে ৫-ট্যাবের নেভিগেশন বার (হোম, ড্যাশবোর্ড, ✨ মায়া, টুলস ল্যাব, প্রোফাইল)। সকল বিজনেস লজিক hackersshikkhok-core প্লাগইন থেকে পরিচালিত হয়। Developed by Hackers শিক্ষক — Official Download Link: https://hackersshikkhok.com
+Version:           4.0.0
+Requires at least: 6.4
+Tested up to:      6.7
+Requires PHP:      8.2
+Update URI:        https://hackersshikkhok.com
+License:           GPL v2 or later
+License URI:       https://hackersshikkhok.com
+Text Domain:       hackersshikkhok-theme
+Tags:              cybersecurity, coding, dark-mode, neon-ui, education, developer-tools, bangla, hackersshikkhok
+*/
+
+:root {
+  --hs-bg: #050811;
+  --hs-surface: #0b1120;
+  --hs-primary: #00f5d4;
+  --hs-secondary: #7c3aed;
+  --hs-accent: #f43f5e;
+  --hs-text: #e2e8f0;
+  --hs-muted: #94a3b8;
+  --hs-border: rgba(0, 245, 212, 0.2);
+}
+
+body.hs-theme-body {
+  background-color: var(--hs-bg);
+  color: var(--hs-text);
+  font-family: 'Hind Siliguri', 'Plus Jakarta Sans', sans-serif;
+  margin: 0;
+}
