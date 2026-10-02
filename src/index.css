@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --hs-bg: #050811;
+    --hs-surface: #0b1120;
+    --hs-surface-2: #111827;
+    --hs-primary: #00f5d4;
+    --hs-secondary: #7c3aed;
+    --hs-accent: #f43f5e;
+    --hs-text: #e2e8f0;
+    --hs-muted: #94a3b8;
+    --hs-border: rgba(0, 245, 212, 0.18);
+  }
+
+  body {
+    font-family: 'Hind Siliguri', 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--hs-bg);
+    color: var(--hs-text);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Syne', 'Hind Siliguri', sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 245, 212, 0.35), 0 0 30px rgba(124, 58, 237, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 245, 212, 0.65), 0 0 45px rgba(124, 58, 237, 0.4);
+  }
+}
+
+@keyframes rgbBorderShift {
+  0% { border-color: #00f5d4; }
+  33% { border-color: #7c3aed; }
+  66% { border-color: #f43f5e; }
+  100% { border-color: #00f5d4; }
+}
+
+.hs-glow-btn {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+.hs-rgb-border {
+  animation: rgbBorderShift 6s infinite linear;
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #050811;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00f5d4;
+}
