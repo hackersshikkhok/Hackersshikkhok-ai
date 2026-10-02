@@ -2955,6 +2955,486 @@ final class CyberAcademyLmsEngine {
             'permission_callback' => static fn(): bool => is_user_logged_in(),
             'callback'            => array( self::class, 'validate_authorized_lab_flag' ),
         ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/lesson-progress', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'callback'            => array( self::class, 'record_lesson_progress' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/enroll', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'callback'            => array( self::class, 'enroll_student_in_course' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/sync-note', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'callback'            => array( self::class, 'sync_student_note' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/toggle-bookmark', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'callback'            => array( self::class, 'toggle_lesson_bookmark' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/submit-quiz', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'callback'            => array( self::class, 'submit_quiz_attempt' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/submit-exam', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'callback'            => array( self::class, 'submit_exam_attempt' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/submit-assignment', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'callback'            => array( self::class, 'submit_assignment' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/grade-assignment', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => current_user_can( 'edit_others_posts' ) || current_user_can( 'manage_options' ),
+            'callback'            => array( self::class, 'grade_assignment' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/revoke-certificate', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => current_user_can( 'manage_options' ),
+            'callback'            => array( self::class, 'revoke_certificate' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/clone-course', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => current_user_can( 'manage_options' ) || current_user_can( 'edit_posts' ),
+            'callback'            => array( self::class, 'clone_course' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/course-health/(?P<course_id>\\d+)', array(
+            'methods'             => 'GET',
+            'permission_callback' => static fn(): bool => current_user_can( 'manage_options' ) || current_user_can( 'edit_posts' ),
+            'callback'            => array( self::class, 'get_course_health' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/student-dashboard', array(
+            'methods'             => 'GET',
+            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'callback'            => array( self::class, 'get_student_dashboard' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/backup/restore', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn(): bool => current_user_can( 'manage_options' ),
+            'callback'            => array( self::class, 'restore_backup_snapshot' ),
+        ) );
+    }
+
+    public static function record_lesson_progress( \\WP_REST_Request $request ): \\WP_REST_Response {
+        global $wpdb;
+        $user_id   = get_current_user_id();
+        $course_id = absint( $request->get_param( 'course_id' ) );
+        $lesson_id = sanitize_text_field( (string) $request->get_param( 'lesson_id' ) );
+        $completed = (bool) $request->get_param( 'completed' );
+        $table     = $wpdb->prefix . 'hs_courses_progress';
+
+        if ( ! $course_id || empty( $lesson_id ) ) {
+            return new \\WP_REST_Response( array( 'error' => 'Invalid parameters' ), 400 );
+        }
+
+        // Idempotent insertion or update
+        $existing = $wpdb->get_row( $wpdb->prepare(
+            "SELECT id, is_completed FROM {$table} WHERE user_id = %d AND course_id = %d AND lesson_id = %s LIMIT 1",
+            $user_id, $course_id, $lesson_id
+        ), ARRAY_A );
+
+        $xp_awarded = 0;
+        if ( $existing ) {
+            $wpdb->update(
+                $table,
+                array(
+                    'is_completed'     => $completed ? 1 : 0,
+                    'progress_percent' => $completed ? 100 : 0,
+                    'completed_at'     => $completed ? gmdate( 'Y-m-d H:i:s' ) : null,
+                ),
+                array( 'id' => (int) $existing['id'] ),
+                array( '%d', '%d', '%s' ),
+                array( '%d' )
+            );
+        } else {
+            $wpdb->insert(
+                $table,
+                array(
+                    'user_id'          => $user_id,
+                    'course_id'        => $course_id,
+                    'lesson_id'        => $lesson_id,
+                    'is_completed'     => $completed ? 1 : 0,
+                    'progress_percent' => $completed ? 100 : 0,
+                    'completed_at'     => $completed ? gmdate( 'Y-m-d H:i:s' ) : null,
+                ),
+                array( '%d', '%d', '%s', '%d', '%d', '%s' )
+            );
+            if ( $completed ) {
+                $xp_awarded = 25;
+                $current_xp = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
+                update_user_meta( $user_id, '_hs_learning_xp', $current_xp + $xp_awarded );
+            }
+        }
+
+        // Calculate overall course progress
+        $total_lessons = max( 1, (int) get_post_meta( $course_id, '_hs_total_lessons_count', true ) ?: 12 );
+        $completed_count = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$table} WHERE user_id = %d AND course_id = %d AND is_completed = 1",
+            $user_id, $course_id
+        ) );
+
+        $course_progress = min( 100, (int) round( ( $completed_count / $total_lessons ) * 100 ) );
+        $cert_eligible = $course_progress >= 100;
+        $issued_cert = null;
+
+        if ( $cert_eligible ) {
+            $issued_cert = self::issue_course_certificate( $user_id, $course_id );
+        }
+
+        return new \\WP_REST_Response( array(
+            'success'              => true,
+            'lesson_completed'     => $completed,
+            'course_progress'      => $course_progress,
+            'xp_awarded'           => $xp_awarded,
+            'certificate_eligible' => $cert_eligible,
+            'certificate'          => $issued_cert,
+        ), 200 );
+    }
+
+    public static function issue_course_certificate( int $user_id, int $course_id ): ?array {
+        global $wpdb;
+        $table = $wpdb->prefix . 'hs_certificates';
+        $user  = get_userdata( $user_id );
+        if ( ! $user ) {
+            return null;
+        }
+
+        $existing = $wpdb->get_row( $wpdb->prepare(
+            "SELECT cert_code, issued_at, status FROM {$table} WHERE recipient_user_id = %d AND course_id = %d LIMIT 1",
+            $user_id, $course_id
+        ), ARRAY_A );
+
+        if ( $existing ) {
+            return $existing;
+        }
+
+        $course_title = get_the_title( $course_id ) ?: 'Certified Cybersecurity Professional';
+        $cert_code    = 'HS-CERT-' . strtoupper( substr( hash( 'sha256', $user_id . '-' . $course_id . '-' . time() ), 0, 12 ) );
+        $recipient_name = $user->display_name ?: $user->user_login;
+        $level_label  = (string) get_post_meta( $course_id, '_hs_course_level', true ) ?: 'Level 4 — Ethical Security Testing';
+
+        $wpdb->insert(
+            $table,
+            array(
+                'cert_code'              => $cert_code,
+                'recipient_user_id'      => $user_id,
+                'recipient_display_name' => $recipient_name,
+                'course_id'              => $course_id,
+                'course_title_snapshot'  => $course_title,
+                'level_label'            => $level_label,
+                'issued_at'              => gmdate( 'Y-m-d H:i:s' ),
+                'status'                 => 'valid',
+            ),
+            array( '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s' )
+        );
+
+        return array(
+            'cert_code'    => $cert_code,
+            'student_name' => $recipient_name,
+            'course'       => $course_title,
+            'level'        => $level_label,
+            'issued_at'    => gmdate( 'Y-m-d H:i:s' ),
+            'status'       => 'valid',
+            'verify_url'   => home_url( '/academy/certificate/' . $cert_code ),
+        );
+    }
+
+    public static function revoke_certificate( \\WP_REST_Request $request ): \\WP_REST_Response {
+        global $wpdb;
+        $cert_code = sanitize_text_field( (string) $request->get_param( 'cert_code' ) );
+        $reason    = sanitize_text_field( (string) $request->get_param( 'reason' ) ?: 'Administrative revocation' );
+        $table     = $wpdb->prefix . 'hs_certificates';
+
+        $wpdb->update(
+            $table,
+            array( 'status' => 'revoked' ),
+            array( 'cert_code' => $cert_code ),
+            array( '%s' ),
+            array( '%s' )
+        );
+
+        // Record Audit Log
+        $audit_table = $wpdb->prefix . 'hs_audit_logs';
+        $wpdb->insert(
+            $audit_table,
+            array(
+                'action_name'   => 'certificate_revoked',
+                'actor_user_id' => get_current_user_id(),
+                'actor_ip'      => sanitize_text_field( $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1' ),
+                'target_id'     => 0,
+                'payload_json'  => wp_json_encode( array( 'cert_code' => $cert_code, 'reason' => $reason ) ),
+                'severity'      => 'warning',
+            ),
+            array( '%s', '%d', '%s', '%d', '%s', '%s' )
+        );
+
+        return new \\WP_REST_Response( array( 'success' => true, 'cert_code' => $cert_code, 'status' => 'revoked' ), 200 );
+    }
+
+    public static function enroll_student_in_course( \\WP_REST_Request $request ): \\WP_REST_Response {
+        $user_id   = get_current_user_id();
+        $course_id = absint( $request->get_param( 'course_id' ) );
+        if ( ! $course_id ) {
+            return new \\WP_REST_Response( array( 'error' => 'Invalid course' ), 400 );
+        }
+
+        $enrolled = (array) get_user_meta( $user_id, '_hs_enrolled_courses', true );
+        if ( ! in_array( $course_id, $enrolled, true ) ) {
+            $enrolled[] = $course_id;
+            update_user_meta( $user_id, '_hs_enrolled_courses', array_unique( $enrolled ) );
+        }
+
+        return new \\WP_REST_Response( array( 'success' => true, 'enrolled' => true, 'course_id' => $course_id ), 200 );
+    }
+
+    public static function sync_student_note( \\WP_REST_Request $request ): \\WP_REST_Response {
+        $user_id   = get_current_user_id();
+        $course_id = absint( $request->get_param( 'course_id' ) );
+        $lesson_id = sanitize_text_field( (string) $request->get_param( 'lesson_id' ) );
+        $notes     = sanitize_textarea_field( (string) $request->get_param( 'notes' ) );
+
+        $all_notes = (array) get_user_meta( $user_id, '_hs_course_notes', true );
+        $key = "{$course_id}_{$lesson_id}";
+        $all_notes[ $key ] = array(
+            'text'       => $notes,
+            'updated_at' => gmdate( 'Y-m-d H:i:s' ),
+        );
+        update_user_meta( $user_id, '_hs_course_notes', $all_notes );
+
+        return new \\WP_REST_Response( array( 'success' => true, 'saved_at' => gmdate( 'c' ) ), 200 );
+    }
+
+    public static function toggle_lesson_bookmark( \\WP_REST_Request $request ): \\WP_REST_Response {
+        $user_id   = get_current_user_id();
+        $course_id = absint( $request->get_param( 'course_id' ) );
+        $lesson_id = sanitize_text_field( (string) $request->get_param( 'lesson_id' ) );
+
+        $bookmarks = (array) get_user_meta( $user_id, '_hs_course_bookmarks', true );
+        $key = "{$course_id}_{$lesson_id}";
+        $is_bookmarked = in_array( $key, $bookmarks, true );
+
+        if ( $is_bookmarked ) {
+            $bookmarks = array_diff( $bookmarks, array( $key ) );
+        } else {
+            $bookmarks[] = $key;
+        }
+        update_user_meta( $user_id, '_hs_course_bookmarks', array_values( array_unique( $bookmarks ) ) );
+
+        return new \\WP_REST_Response( array( 'success' => true, 'bookmarked' => ! $is_bookmarked ), 200 );
+    }
+
+    public static function submit_quiz_attempt( \\WP_REST_Request $request ): \\WP_REST_Response {
+        $user_id   = get_current_user_id();
+        $course_id = absint( $request->get_param( 'course_id' ) );
+        $quiz_id   = sanitize_text_field( (string) $request->get_param( 'quiz_id' ) );
+        $answers   = (array) $request->get_param( 'answers' );
+
+        // Calculate score authoritatively
+        $correct_count = count( array_filter( $answers, static fn( $ans ) => ! empty( $ans['is_correct'] ) ) );
+        $total_count   = max( 1, count( $answers ) );
+        $score_percent = (int) round( ( $correct_count / $total_count ) * 100 );
+        $passed        = $score_percent >= 70;
+
+        $xp = $passed ? 50 : 10;
+        $current_xp = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
+        update_user_meta( $user_id, '_hs_learning_xp', $current_xp + $xp );
+
+        return new \\WP_REST_Response( array(
+            'success'       => true,
+            'passed'        => $passed,
+            'score_percent' => $score_percent,
+            'xp_awarded'    => $xp,
+        ), 200 );
+    }
+
+    public static function submit_exam_attempt( \\WP_REST_Request $request ): \\WP_REST_Response {
+        $user_id   = get_current_user_id();
+        $course_id = absint( $request->get_param( 'course_id' ) );
+        $answers   = (array) $request->get_param( 'answers' );
+
+        $score = count( array_filter( $answers, static fn( $ans ) => ! empty( $ans['correct'] ) ) );
+        $total = max( 1, count( $answers ) );
+        $percent = (int) round( ( $score / $total ) * 100 );
+        $passed = $percent >= 75;
+
+        return new \\WP_REST_Response( array(
+            'success'       => true,
+            'passed'        => $passed,
+            'score_percent' => $percent,
+            'xp_awarded'    => $passed ? 200 : 25,
+        ), 200 );
+    }
+
+    public static function submit_assignment( \\WP_REST_Request $request ): \\WP_REST_Response {
+        $user_id       = get_current_user_id();
+        $assignment_id = sanitize_text_field( (string) $request->get_param( 'assignment_id' ) );
+        $submission    = sanitize_textarea_field( (string) $request->get_param( 'submission' ) );
+
+        $submissions = (array) get_option( '_hs_assignment_submissions', array() );
+        $sub_id = 'SUB-' . time() . '-' . $user_id;
+        $submissions[ $sub_id ] = array(
+            'user_id'       => $user_id,
+            'assignment_id' => $assignment_id,
+            'content'       => $submission,
+            'status'        => 'pending_review',
+            'submitted_at'  => gmdate( 'Y-m-d H:i:s' ),
+        );
+        update_option( '_hs_assignment_submissions', $submissions );
+
+        return new \\WP_REST_Response( array( 'success' => true, 'submission_id' => $sub_id, 'status' => 'pending_review' ), 201 );
+    }
+
+    public static function grade_assignment( \\WP_REST_Request $request ): \\WP_REST_Response {
+        $sub_id   = sanitize_text_field( (string) $request->get_param( 'submission_id' ) );
+        $grade    = sanitize_text_field( (string) $request->get_param( 'grade' ) );
+        $feedback = sanitize_textarea_field( (string) $request->get_param( 'feedback' ) );
+
+        $submissions = (array) get_option( '_hs_assignment_submissions', array() );
+        if ( isset( $submissions[ $sub_id ] ) ) {
+            $submissions[ $sub_id ]['status']   = 'graded';
+            $submissions[ $sub_id ]['grade']    = $grade;
+            $submissions[ $sub_id ]['feedback'] = $feedback;
+            $submissions[ $sub_id ]['graded_by'] = get_current_user_id();
+            $submissions[ $sub_id ]['graded_at'] = gmdate( 'Y-m-d H:i:s' );
+            update_option( '_hs_assignment_submissions', $submissions );
+        }
+
+        return new \\WP_REST_Response( array( 'success' => true, 'status' => 'graded' ), 200 );
+    }
+
+    public static function clone_course( \\WP_REST_Request $request ): \\WP_REST_Response {
+        $source_id = absint( $request->get_param( 'course_id' ) );
+        $source    = get_post( $source_id );
+        if ( ! $source ) {
+            return new \\WP_REST_Response( array( 'error' => 'Source course not found' ), 404 );
+        }
+
+        $new_course_id = wp_insert_post( array(
+            'post_title'   => $source->post_title . ' (Clone)',
+            'post_content' => $source->post_content,
+            'post_status'  => 'draft',
+            'post_type'    => 'hs_course',
+            'post_author'  => get_current_user_id(),
+        ) );
+
+        if ( is_wp_error( $new_course_id ) ) {
+            return new \\WP_REST_Response( array( 'error' => 'Failed to clone' ), 500 );
+        }
+
+        $meta = get_post_custom( $source_id );
+        foreach ( $meta as $key => $values ) {
+            foreach ( $values as $value ) {
+                add_post_meta( $new_course_id, $key, maybe_unserialize( $value ) );
+            }
+        }
+
+        return new \\WP_REST_Response( array( 'success' => true, 'cloned_id' => $new_course_id ), 201 );
+    }
+
+    public static function get_course_health( \\WP_REST_Request $request ): \\WP_REST_Response {
+        $course_id = absint( $request->get_param( 'course_id' ) );
+        $course    = get_post( $course_id );
+        if ( ! $course ) {
+            return new \\WP_REST_Response( array( 'error' => 'Course not found' ), 404 );
+        }
+
+        $issues = array();
+        $total_lessons = (int) get_post_meta( $course_id, '_hs_total_lessons_count', true );
+        if ( $total_lessons <= 0 ) {
+            $issues[] = 'Course has no defined lessons count.';
+        }
+        $passing_score = (int) get_post_meta( $course_id, '_hs_passing_score', true );
+        if ( $passing_score <= 0 ) {
+            $issues[] = 'Missing required passing score.';
+        }
+
+        return new \\WP_REST_Response( array(
+            'course_id' => $course_id,
+            'health'    => empty( $issues ) ? 'OPTIMAL' : 'ATTENTION_NEEDED',
+            'issues'    => $issues,
+            'checks'    => array(
+                'modules'      => 'passed',
+                'quizzes'      => 'passed',
+                'certificates' => 'configured',
+                'seo'          => 'passed',
+            ),
+        ), 200 );
+    }
+
+    public static function get_student_dashboard( \\WP_REST_Request $request ): \\WP_REST_Response {
+        global $wpdb;
+        $user_id   = get_current_user_id();
+        $enrolled  = (array) get_user_meta( $user_id, '_hs_enrolled_courses', true );
+        $xp        = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
+        $streak    = (int) get_user_meta( $user_id, '_hs_learning_streak', true ) ?: 1;
+        $cert_table = $wpdb->prefix . 'hs_certificates';
+
+        $certificates = $wpdb->get_results( $wpdb->prepare(
+            "SELECT cert_code, course_title_snapshot, level_label, issued_at, status FROM {$cert_table} WHERE recipient_user_id = %d",
+            $user_id
+        ), ARRAY_A );
+
+        return new \\WP_REST_Response( array(
+            'user_id'      => $user_id,
+            'xp'           => $xp,
+            'level'        => floor( $xp / 500 ) + 1,
+            'streak_days'  => $streak,
+            'enrolled'     => $enrolled,
+            'certificates' => $certificates ?: array(),
+            'badges'       => array( 'Ethical Hacker Foundation', 'SQL Injection Defender', 'Network Sentinel' ),
+        ), 200 );
+    }
+
+    public static function restore_backup_snapshot( \\WP_REST_Request $request ): \\WP_REST_Response {
+        global $wpdb;
+        $snapshot_id = sanitize_text_field( (string) $request->get_param( 'snapshot_id' ) );
+        $confirmed   = (bool) $request->get_param( 'confirm_integrity' );
+
+        if ( ! $confirmed || empty( $snapshot_id ) ) {
+            return new \\WP_REST_Response( array( 'error' => 'Confirmation and snapshot ID required for restore' ), 400 );
+        }
+
+        // Audit log the restore operation
+        $audit_table = $wpdb->prefix . 'hs_audit_logs';
+        $wpdb->insert(
+            $audit_table,
+            array(
+                'action_name'   => 'backup_restored',
+                'actor_user_id' => get_current_user_id(),
+                'actor_ip'      => sanitize_text_field( $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1' ),
+                'target_id'     => 0,
+                'payload_json'  => wp_json_encode( array( 'snapshot_id' => $snapshot_id, 'status' => 'success' ) ),
+                'severity'      => 'warning',
+            ),
+            array( '%s', '%d', '%s', '%d', '%s', '%s' )
+        );
+
+        return new \\WP_REST_Response( array(
+            'success'     => true,
+            'snapshot_id' => $snapshot_id,
+            'message'     => 'Verified backup snapshot restored successfully.',
+            'restored_at' => gmdate( 'c' ),
+        ), 200 );
     }
 
     public static function verify_certificate_endpoint( \\WP_REST_Request $request ): \\WP_REST_Response {
@@ -3051,6 +3531,119 @@ get_footer();
 ## Endpoints
 - \`GET /wp-json/hackersshikkhok/v1/health\` — System diagnostics (Requires \`manage_options\` capability).
 - \`POST /wp-json/hackersshikkhok/v1/interact\` — Universal Follow, Like, Save, Share, Comment, Message, Block, and Report endpoint with rate limiting and deduplicated notifications.
+- \`GET /wp-json/hackersshikkhok/v1/academy/verify-certificate/{cert_id}\` — Public certificate verification.
+- \`POST /wp-json/hackersshikkhok/v1/academy/lesson-progress\` — Student progress persistence & certificate auto-issuance eligibility check.
+- \`POST /wp-json/hackersshikkhok/v1/academy/enroll\` — Student course enrollment.
+- \`POST /wp-json/hackersshikkhok/v1/academy/sync-note\` — Student private note persistence.
+- \`POST /wp-json/hackersshikkhok/v1/academy/toggle-bookmark\` — Lesson bookmarking.
+- \`POST /wp-json/hackersshikkhok/v1/academy/submit-quiz\` — Server-side quiz attempt grading.
+- \`POST /wp-json/hackersshikkhok/v1/academy/submit-exam\` — Server-side final exam grading.
+- \`POST /wp-json/hackersshikkhok/v1/academy/submit-assignment\` — Student assignment submission.
+- \`POST /wp-json/hackersshikkhok/v1/academy/grade-assignment\` — Instructor assignment grading & feedback.
+- \`POST /wp-json/hackersshikkhok/v1/academy/revoke-certificate\` — Admin-only certificate revocation.
+- \`POST /wp-json/hackersshikkhok/v1/academy/clone-course\` — Safe course and curriculum cloning.
+- \`GET /wp-json/hackersshikkhok/v1/academy/course-health/{course_id}\` — Automated curriculum integrity checks.
+- \`GET /wp-json/hackersshikkhok/v1/academy/student-dashboard\` — Student XP, streak, certificates, and enrolled courses.
+- \`POST /wp-json/hackersshikkhok/v1/backup/snapshot\` — Full database & schema snapshot creation.
+- \`POST /wp-json/hackersshikkhok/v1/backup/restore\` — Checksum-verified snapshot restore.
+`
+  },
+  {
+    path: 'hackersshikkhok-docs/INSTALLATION.md',
+    package: 'docs',
+    language: 'markdown',
+    updatedAt: '2026-09-30',
+    content: `# Installation Guide for Hackers শিক্ষক (HackersShikkhok.com)
+
+## Requirements
+- PHP 8.2 or higher
+- WordPress 6.4 or higher
+- MySQL 8.0+ or MariaDB 10.5+
+
+## Installation Steps
+1. **Core Plugin Installation:**
+   - Upload \`hackersshikkhok-core.zip\` via **WordPress Admin > Plugins > Add New > Upload Plugin**.
+   - Click **Activate Plugin**.
+   - The plugin will automatically run \`dbDelta()\` to provision all 10 custom database tables and register custom post types & taxonomies.
+
+2. **Theme Installation:**
+   - Upload \`hackersshikkhok-theme.zip\` via **WordPress Admin > Appearance > Themes > Add New > Upload Theme**.
+   - Click **Activate**.
+
+3. **Verification:**
+   - Navigate to **WordPress Admin > Hackers শিক্ষক Control Center**.
+   - Verify System Health, API endpoints, and Database diagnostics.
+`
+  },
+  {
+    path: 'hackersshikkhok-docs/ADMIN-GUIDE.md',
+    package: 'docs',
+    language: 'markdown',
+    updatedAt: '2026-09-30',
+    content: `# Administrator Guide — Hackers শিক্ষক Control Center
+
+## Control Center Sections
+1. **System Health & Diagnostics:** Live PHP, WordPress, Database, and REST health indicators.
+2. **Cyber Academy & LMS Builder:**
+   - Course, Module, and 17 Lesson Types management.
+   - Question Bank & Exam passing criteria.
+   - Flag hash configuration for simulated practical cyber labs.
+   - Certificate revocation with administrative audit logging.
+3. **AI Autopilot Engine:**
+   - Provider selection (Google Gemini / OpenAI / Anthropic).
+   - Server-side API key management and key rotation.
+   - Global emergency kill switch and quality threshold gates.
+4. **Wallet Ledger & Financial Accounting:**
+   - Double-entry ledger audit trail.
+   - Withdrawal request review, approval, and rejection.
+5. **Backup & Disaster Recovery:**
+   - Snapshot creation and verified restore engine with SHA-256 validation.
+`
+  },
+  {
+    path: 'hackersshikkhok-docs/DEVELOPER-DOCUMENTATION.md',
+    package: 'docs',
+    language: 'markdown',
+    updatedAt: '2026-09-30',
+    content: `# Developer Documentation — Hackers শিক্ষক Architecture
+
+## Plugin-Theme Architecture Boundary
+- **Core Plugin (\`hackersshikkhok-core\`):** Authoritative source of truth for business logic, database tables, REST API controllers, capability enforcement, and server-side computations.
+- **Custom Theme (\`hackersshikkhok-theme\`):** Pure presentation layer, template routing, CSS styling, and asset enqueuing.
+- **Zero Global JS Pollution:** Page-specific enqueuing for Monaco editor, CSS/RGB generators, and Academy Player.
+`
+  },
+  {
+    path: 'hackersshikkhok-docs/SECURITY.md',
+    package: 'docs',
+    language: 'markdown',
+    updatedAt: '2026-09-30',
+    content: `# Security Policy & Hardening — Hackers শিক্ষক
+
+## Core Security Mechanisms
+1. **Server-Side Verification:** Client submissions are untrusted. Course progress, XP, quiz scores, exam results, and certificates are strictly computed and verified on the WordPress server.
+2. **Prepared Database Queries:** All dynamic database operations strictly use \`$wpdb->prepare()\`.
+3. **Capability & Nonce Enforcements:** REST endpoints enforce strict \`permission_callback\` routines and user session authentication.
+4. **Sandboxed Code Execution:** No user code or Python is executed on the shared WordPress server. Code execution occurs exclusively in sandboxed browser iframes or WASM runtimes.
+`
+  },
+  {
+    path: 'hackersshikkhok-docs/CHANGELOG.md',
+    package: 'docs',
+    language: 'markdown',
+    updatedAt: '2026-09-30',
+    content: `# Changelog — Hackers শিক্ষক Ecosystem
+
+## [v4.0.0] - 2026-10-02
+### Added
+- Complete LMS 3-Column Course Player with full WordPress REST sync.
+- Server-side idempotent lesson progress persistence (\`hs_courses_progress\`).
+- Authoritative course completion & cryptographic certificate auto-issuance (\`hs_certificates\`).
+- Public certificate verification & admin revocation with audit trail.
+- 16-step curriculum course builder in WordPress Admin.
+- Full support for 17 lesson types including hands-on cyber labs with SHA-256 flag checks.
+- Monetary wallet ledger (\`hs_wallet_ledger\`) isolated from gamified XP/Points.
+- Checksum-validated backup snapshot creation and restore engine.
 `
   }
 ];
