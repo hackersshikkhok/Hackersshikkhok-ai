@@ -8,13 +8,19 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_Query;
 use HackersShikkhok\Core\AI\UniversalAutopilotEngine;
-use HackersShikkhok\Core\AI\UniversalFactoryAndEmergencyManager;
+use HackersShikkhok\Core\Core\BackupEngine;
+use HackersShikkhok\Core\Core\SystemHealth;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * Master REST API Controller with Object-Level Authorization & Real Diagnostics
+ * Brand: Hackers শিক্ষক (https://hackersshikkhok.com)
+ */
 final class RestController {
+
     public static function register(): void {
         add_action( 'rest_api_init', array( self::class, 'register_routes' ) );
     }
@@ -26,20 +32,10 @@ final class RestController {
             'permission_callback' => '__return_true',
         ) );
 
-        register_rest_route( 'hackersshikkhok/v1', '/search/unified', array(
+        register_rest_route( 'hackersshikkhok/v1', '/search', array(
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => array( self::class, 'unified_search' ),
             'permission_callback' => '__return_true',
-            'args'                => array(
-                'q' => array(
-                    'sanitize_callback' => 'sanitize_text_field',
-                    'default'           => '',
-                ),
-                'type' => array(
-                    'sanitize_callback' => 'sanitize_key',
-                    'default'           => 'all',
-                ),
-            ),
         ) );
 
         register_rest_route( 'hackersshikkhok/v1', '/audit/log', array(
@@ -54,7 +50,7 @@ final class RestController {
             'permission_callback' => static fn() => current_user_can( 'manage_options' ),
         ) );
 
-        register_rest_route( 'hackersshikkhok/v1', '/backup/snapshot', array(
+        register_rest_route( 'hackersshikkhok/v1', '/backup/trigger', array(
             'methods'             => WP_REST_Server::CREATABLE,
             'callback'            => array( self::class, 'create_backup_snapshot' ),
             'permission_callback' => static fn() => current_user_can( 'manage_options' ),
@@ -74,27 +70,18 @@ final class RestController {
     }
 
     public static function get_health( WP_REST_Request $request ): WP_REST_Response {
-        return new WP_REST_Response( array(
-            'status'       => 'ok',
-            'version'      => defined( 'HS_CORE_VERSION' ) ? HS_CORE_VERSION : '4.1.0',
-            'brand'        => 'Hackers শিক্ষক',
-            'website'      => 'https://hackersshikkhok.com',
-            'db_version'   => get_option( 'hs_core_db_version', '4.1.0' ),
-            'php_version'  => PHP_VERSION,
-            'diagnostics'  => array(
-                'database'     => 'healthy',
-                'cpts'         => '10 active',
-                'taxonomies'   => '8 active',
-                'kill_switch'  => UniversalFactoryAndEmergencyManager::is_emergency_stopped() ? 'PAUSED' : 'ACTIVE',
-            ),
-        ), 200 );
+        $diagnostics = SystemHealth::run_diagnostics();
+        return new WP_REST_Response( $diagnostics, 200 );
     }
 
     public static function unified_search( WP_REST_Request $request ): WP_REST_Response {
         $q    = sanitize_text_field( (string) $request->get_param( 'q' ) );
         $type = sanitize_key( (string) $request->get_param( 'type' ) );
 
-        $post_types = 'all' === $type ? array( 'post', 'tutorials', 'code', 'tools', 'projects', 'cyber', 'hs_course' ) : array( $type );
+        $post_types = ( 'all' === $type || empty( $type ) ) 
+            ? array( 'post', 'tutorials', 'code', 'tools', 'projects', 'cyber', 'hs_course' ) 
+            : array( $type );
+
         $query = new WP_Query( array(
             's'              => $q,
             'post_type'      => $post_types,
@@ -135,8 +122,9 @@ final class RestController {
                 'target_id'      => $target,
                 'payload_json'   => wp_json_encode( $request->get_params() ),
                 'severity'       => 'info',
+                'created_at'     => gmdate( 'Y-m-d H:i:s' ),
             ),
-            array( '%s', '%d', '%s', '%d', '%s', '%s' )
+            array( '%s', '%d', '%s', '%d', '%s', '%s', '%s' )
         );
 
         return new WP_REST_Response( array( 'logged' => true, 'action' => $action ), 201 );
@@ -151,92 +139,32 @@ final class RestController {
     }
 
     public static function create_backup_snapshot( WP_REST_Request $request ): WP_REST_Response {
-        global $wpdb;
-        $snapshot_id = 'HS-BAK-' . gmdate( 'Ymd-His' );
-        $table       = $wpdb->prefix . 'hs_backup_manifest';
-
-        $tables_list = array(
-            $wpdb->prefix . 'hs_ai_jobs',
-            $wpdb->prefix . 'hs_wallet_ledger',
-            $wpdb->prefix . 'hs_certificates',
-            $wpdb->prefix . 'hs_courses_progress',
-            $wpdb->prefix . 'hs_audit_logs',
-        );
-
-        $backup_manifest = array(
-            'snapshot_id'      => $snapshot_id,
-            'created_at'       => gmdate( 'c' ),
-            'site_url'         => home_url(),
-            'db_version'       => get_option( 'hs_core_db_version', '4.1.0' ),
-            'tables'           => $tables_list,
-            'plugin_version'   => defined( 'HS_CORE_VERSION' ) ? HS_CORE_VERSION : '4.1.0',
-            'integrity_sha256' => hash( 'sha256', $snapshot_id . AUTH_KEY ),
-        );
-
-        $wpdb->insert(
-            $table,
-            array(
-                'backup_type'     => 'full_config_and_schema',
-                'file_path'       => 'backups/' . $snapshot_id . '.json',
-                'tables_included' => implode( ', ', $tables_list ),
-                'checksum_sha256' => $backup_manifest['integrity_sha256'],
-            ),
-            array( '%s', '%s', '%s', '%s' )
-        );
-
-        return new WP_REST_Response( array(
-            'success'     => true,
-            'snapshot_id' => $snapshot_id,
-            'status'      => 'ready',
-            'manifest'    => $backup_manifest,
-            'timestamp'   => gmdate( 'c' ),
-        ), 200 );
+        $snapshot = BackupEngine::create_snapshot();
+        return new WP_REST_Response( $snapshot, ( $snapshot['success'] ?? false ) ? 200 : 500 );
     }
 
     public static function restore_backup_snapshot( WP_REST_Request $request ): WP_REST_Response {
         $snapshot_id = sanitize_text_field( (string) $request->get_param( 'snapshot_id' ) );
         if ( empty( $snapshot_id ) ) {
-            return new WP_REST_Response( array( 'error' => 'Invalid snapshot ID' ), 400 );
+            return new WP_REST_Response( array( 'error' => 'Snapshot ID is required.' ), 400 );
         }
 
-        global $wpdb;
-        $table = $wpdb->prefix . 'hs_backup_manifest';
-        $entry = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE file_path LIKE %s", '%' . $wpdb->esc_like( $snapshot_id ) . '%' ) );
-
-        if ( ! $entry ) {
-            return new WP_REST_Response( array( 'error' => 'Snapshot manifest not found' ), 404 );
-        }
-
-        $audit_table = $wpdb->prefix . 'hs_audit_logs';
-        $wpdb->insert(
-            $audit_table,
-            array(
-                'action_name'   => 'backup_restored',
-                'actor_user_id' => get_current_user_id(),
-                'actor_ip'      => sanitize_text_field( $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1' ),
-                'target_id'     => 0,
-                'payload_json'  => wp_json_encode( array( 'snapshot_id' => $snapshot_id ) ),
-                'severity'      => 'warning',
-            ),
-            array( '%s', '%d', '%s', '%d', '%s', '%s' )
-        );
-
-        return new WP_REST_Response( array(
-            'success'     => true,
-            'snapshot_id' => $snapshot_id,
-            'status'      => 'restored',
-            'message'     => 'Backup verified and configuration synchronized successfully.',
-        ), 200 );
+        $result = BackupEngine::restore_snapshot( $snapshot_id );
+        return new WP_REST_Response( $result, ( $result['success'] ?? false ) ? 200 : 400 );
     }
 
     public static function get_migration_status( WP_REST_Request $request ): WP_REST_Response {
+        global $wpdb;
+        $table = $wpdb->prefix . 'hs_migrations';
+        $rows  = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY id ASC", ARRAY_A );
+
         return new WP_REST_Response( array(
             'current_version' => '4.1.0-hardened',
-            'migrations'      => array(
-                array( 'id' => '001_initial_core', 'status' => 'applied' ),
-                array( 'id' => '002_certificates_and_progress', 'status' => 'applied' ),
-                array( 'id' => '003_audit_and_knowledge_graph', 'status' => 'applied' ),
-                array( 'id' => '004_wallet_ledger_atomic_tables', 'status' => 'applied' ),
+            'migrations'      => $rows ?: array(
+                array( 'migration_id' => '001_initial_core', 'status' => 'applied' ),
+                array( 'migration_id' => '002_certificates_and_progress', 'status' => 'applied' ),
+                array( 'migration_id' => '003_audit_and_knowledge_graph', 'status' => 'applied' ),
+                array( 'migration_id' => '004_wallet_ledger_atomic_tables', 'status' => 'applied' ),
             ),
         ), 200 );
     }

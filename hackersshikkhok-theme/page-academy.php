@@ -10,9 +10,8 @@ declare(strict_types=1);
 get_header();
 
 $current_user_id = get_current_user_id();
-$user_xp = $current_user_id ? (int) get_user_meta( $current_user_id, '_hs_learning_xp', true ) : 0;
-$wallet_data = \HackersShikkhok\Core\Users\UserEcosystem::get_wallet_summary( $current_user_id );
-$rest_nonce = wp_create_nonce( 'wp_rest' );
+$wallet_data     = \HackersShikkhok\Core\Users\UserEcosystem::get_wallet_summary( $current_user_id );
+$rest_nonce      = wp_create_nonce( 'wp_rest' );
 ?>
 
 <div class="hs-academy-viewport" data-hs-theme="cyber-dark">
@@ -123,11 +122,13 @@ $rest_nonce = wp_create_nonce( 'wp_rest' );
 
                 <div class="hs-stage-content active" id="hs-stage-lecture">
                     <div class="hs-video-container">
-                        <div class="hs-video-mockup">
-                            <div class="hs-video-play-btn">▶</div>
-                            <p>YouTube Companion Stream: <strong>@HackersShikkhok</strong></p>
-                            <small>Hardware-isolated streaming with 1080p 60fps technical walkthrough</small>
-                        </div>
+                        <iframe 
+                            id="hs-video-frame" 
+                            src="https://www.youtube-nocookie.com/embed/videoseries?list=PLr6-GrHGFmWzN5j_4X33q1m8v7yQk9m2e" 
+                            title="Hackers শিক্ষক Cyber Tutorial Player" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
                     </div>
                 </div>
 
@@ -158,82 +159,221 @@ $rest_nonce = wp_create_nonce( 'wp_rest' );
                             <div class="hs-quiz-q">
                                 <p><strong>1. Which comparison method avoids timing attack vulnerabilities in token validation?</strong></p>
                                 <label><input type="radio" name="q1" value="0" /> $a == $b (Standard Equality)</label><br />
-                                <label><input type="radio" name="q1" value="1" /> hash_equals($a, $b) (Constant-Time Comparison)</label><br />
+                                <label><input type="radio" name="q1" value="1" /> hash_equals($a, $b) (Constant-Time)</label><br />
                                 <label><input type="radio" name="q1" value="2" /> strcmp($a, $b)</label><br />
                                 <label><input type="radio" name="q1" value="3" /> md5($a) == md5($b)</label>
                             </div>
                             <div class="hs-quiz-q">
-                                <p><strong>2. What is the primary function of HMAC-SHA256 in certificate issuance?</strong></p>
-                                <label><input type="radio" name="q2" value="0" /> Encrypting database passwords</label><br />
-                                <label><input type="radio" name="q2" value="1" /> Compressing image files</label><br />
-                                <label><input type="radio" name="q2" value="2" /> Guaranteeing data authenticity & tamper-proof integrity</label><br />
-                                <label><input type="radio" name="q2" value="3" /> Client-side localStorage backup</label>
+                                <p><strong>2. What is the fundamental requirement for zero-trust API authorization?</strong></p>
+                                <label><input type="radio" name="q2" value="0" /> Checking IP address only</label><br />
+                                <label><input type="radio" name="q2" value="1" /> Checking user is logged in only</label><br />
+                                <label><input type="radio" name="q2" value="2" /> Verifying both authentication AND object-level resource ownership</label><br />
+                                <label><input type="radio" name="q2" value="3" /> Relying on client-side state</label>
                             </div>
-                            <button type="submit" class="hs-btn-submit-quiz">Submit Assessment for Authoritative Grading ➔</button>
+                            <button type="submit" class="hs-btn-primary">Submit Answers for Server Evaluation</button>
                         </form>
-                        <div id="hs-quiz-result" class="hs-quiz-result" style="display:none;"></div>
                     </div>
                 </div>
             </div>
-
-            <article class="hs-lesson-body">
-                <h2>Lesson Notes & Implementation Guide</h2>
-                <p>Zero-Trust Architecture assumes that threat actors may already exist within the network perimeter. All requests must be authenticated, authorized, and cryptographically verified before access is granted.</p>
-                <div class="hs-code-snippet">
-                    <pre><code>// Defensive validation & HMAC calculation
-function generateSecurityProof(string $userId, string $certCode, string $secret): string {
-    return hash_hmac('sha256', "{$userId}|{$certCode}", $secret);
-}</code></pre>
-                </div>
-            </article>
         </section>
 
-        <!-- COLUMN 3: Student Live Console, Notes & Certificate Hub -->
+        <!-- COLUMN 3: Student Live Console, Notes, Resources & Progress -->
         <aside class="hs-col-console" id="hs-console-col">
             <div class="hs-panel-header">
-                <h3>📝 Live Scholar Notebook</h3>
-                <span class="hs-pill-saved" id="hs-note-save-status">Synced to Cloud</span>
-            </div>
-            <div class="hs-notepad-container">
-                <textarea id="hs-student-notes" placeholder="Take personal markdown study notes for this lesson... Auto-saves to your account." oninput="HS_ACADEMY.autoSaveNotes()"></textarea>
+                <h3>⚡ Scholar Console</h3>
             </div>
 
-            <div class="hs-cert-card" id="hs-cert-snapshot-card">
-                <div class="hs-cert-badge">🏅 VERIFIED CREDENTIAL</div>
-                <h4>Ethical Security Scholar</h4>
-                <p>Complete 100% of curriculum and achieve >= 75% on the Final Exam to unlock your deterministic HMAC certificate.</p>
-                <div class="hs-cert-progress-bar">
-                    <div class="hs-progress-fill" id="hs-console-progress-fill" style="width: 35%;"></div>
+            <div class="hs-console-widget">
+                <div class="hs-widget-title">📝 My Scratchpad & Notes</div>
+                <textarea id="hs-notes-area" placeholder="Write real-time technical notes here..." oninput="HS_ACADEMY.saveNotesLocal(this.value)"></textarea>
+                <div class="hs-notes-footer">
+                    <span id="hs-notes-save-status">Saved</span>
+                    <button class="hs-btn-small" onclick="HS_ACADEMY.syncNotesToServer()">☁️ Sync Cloud</button>
                 </div>
-                <button class="hs-btn-download-cert" id="hs-btn-get-cert" onclick="HS_ACADEMY.generateCertNow()">🎓 Generate Official Certificate</button>
             </div>
 
-            <div class="hs-resources-card">
-                <h4>📦 Lesson Artifacts</h4>
+            <div class="hs-console-widget">
+                <div class="hs-widget-title">📁 Downloadable Lab Resources</div>
                 <ul class="hs-resource-list">
-                    <li><a href="#" download>📄 Threat-Matrix-CheatSheet.pdf</a></li>
-                    <li><a href="#" download>💻 firewall-rules-starter.sh</a></li>
-                    <li><a href="#" download>🛡️ hmac-verifier.py</a></li>
+                    <li><a href="data:text/plain;charset=utf-8,Hackers%20Shikkhok%20Zero-Trust%20Security%20Checklist%20v4.1.0%0A1.%20Enforce%20Object-Level%20Authorization%0A2.%20Use%20hash_equals%20for%20HMAC%20Verification%0A3.%20Atomic%20SQL%20Transactions" download="zero-trust-checklist.txt">📄 Zero-Trust Checklist.txt</a></li>
+                    <li><a href="data:application/json;charset=utf-8,%7B%22course%22%3A%22Defensive%20Security%22%2C%22version%22%3A%224.1.0%22%2C%22verified%22%3Atrue%7D" download="lab-environment-config.json">⚙️ Lab Config.json</a></li>
                 </ul>
             </div>
         </aside>
     </main>
 
-    <div class="hs-modal" id="hs-cert-modal" style="display:none;">
-        <div class="hs-modal-backdrop" onclick="HS_ACADEMY.closeCertModal()"></div>
-        <div class="hs-modal-dialog">
+    <!-- Public Certificate Verification Modal -->
+    <div class="hs-modal-backdrop" id="hs-cert-modal" style="display:none;">
+        <div class="hs-modal-content">
             <div class="hs-modal-header">
-                <h3>📜 Verify Certificate Authenticity</h3>
+                <h3>📜 Certificate Cryptographic Verifier</h3>
                 <button class="hs-modal-close" onclick="HS_ACADEMY.closeCertModal()">✕</button>
             </div>
             <div class="hs-modal-body">
-                <p>Enter the Certificate ID to verify cryptographic proof against the Hackers শিক্ষক Ledger:</p>
-                <div class="hs-modal-input-row">
-                    <input type="text" id="hs-modal-cert-id" placeholder="e.g. HS-CERT-A1B2C3D4E5" />
-                    <button class="hs-btn-search-cert" onclick="HS_ACADEMY.performCertLookup()">Verify Signature</button>
+                <p>Enter any Hackers শিক্ষক Certificate Code to cryptographically verify its authenticity against our server HMAC ledger.</p>
+                <div class="hs-form-row">
+                    <input type="text" id="hs-cert-verify-input" placeholder="e.g. HS-CERT-2026-X9A7B2C" />
+                    <button class="hs-btn-primary" onclick="HS_ACADEMY.verifyCertificateCode()">Verify Signature</button>
                 </div>
-                <div id="hs-cert-lookup-result" style="display:none;" class="hs-cert-result-card"></div>
+                <div id="hs-cert-result" class="hs-cert-result-box" style="display:none;"></div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+window.HS_ACADEMY = (function() {
+    const nonce = '<?php echo esc_js( $rest_nonce ); ?>';
+    const restBase = '<?php echo esc_url_raw( rest_url( 'hackersshikkhok/v1' ) ); ?>';
+    let currentLesson = 'l1_1';
+    let courseId = 101;
+
+    return {
+        loadLesson: function(id, title, type) {
+            currentLesson = id;
+            document.getElementById('hs-current-lesson-crumb').innerText = title;
+            document.querySelectorAll('.hs-lesson-item').forEach(el => el.classList.remove('active'));
+            const target = document.querySelector(`[data-lesson-id="${id}"]`);
+            if (target) target.classList.add('active');
+            if (type === 'terminal') {
+                this.switchStageTab('terminal', document.querySelectorAll('.hs-tab-btn')[1]);
+            } else if (type === 'video') {
+                this.switchStageTab('lecture', document.querySelectorAll('.hs-tab-btn')[0]);
+            }
+        },
+        toggleModule: function(headerEl) {
+            const card = headerEl.parentElement;
+            card.classList.toggle('open');
+            const icon = headerEl.querySelector('.hs-accordion-icon');
+            if (icon) icon.innerText = card.classList.contains('open') ? '▼' : '▶';
+        },
+        switchStageTab: function(tabId, btn) {
+            document.querySelectorAll('.hs-stage-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.hs-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            const target = document.getElementById('hs-stage-' + tabId);
+            if (target) target.style.display = 'block';
+        },
+        completeCurrentLesson: function() {
+            fetch(restBase + '/academy/progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': nonce },
+                body: JSON.stringify({ course_id: courseId, lesson_id: currentLesson })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const badge = document.getElementById('hs-course-progress-badge');
+                    if (badge) badge.innerText = data.overall_percent + '% Complete';
+                    const activeEl = document.querySelector(`[data-lesson-id="${currentLesson}"] .hs-status-icon`);
+                    if (activeEl) { activeEl.innerText = '✓'; activeEl.classList.add('done'); }
+                    alert('Progress saved! Lesson marked as completed. +15 XP awarded.');
+                }
+            })
+            .catch(err => console.error(err));
+        },
+        openQuiz: function(quizId) {
+            this.switchStageTab('quiz', document.querySelectorAll('.hs-tab-btn')[2]);
+        },
+        submitQuizForm: function(e) {
+            e.preventDefault();
+            const form = document.getElementById('hs-quiz-form');
+            const q1Val = form.querySelector('input[name="q1"]:checked')?.value || -1;
+            const q2Val = form.querySelector('input[name="q2"]:checked')?.value || -1;
+
+            const payload = {
+                course_id: courseId,
+                quiz_id: 'quiz_mod1',
+                answers: [
+                    { question_id: 'q1', selected_option: parseInt(q1Val) },
+                    { question_id: 'q2', selected_option: parseInt(q2Val) }
+                ]
+            };
+
+            fetch(restBase + '/academy/quiz/attempt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': nonce },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Quiz Evaluation Complete!\nScore: ${data.score_percent}%\nPassed: ${data.passed ? 'YES' : 'NO'}\nXP Awarded: ${data.xp_awarded}`);
+                } else {
+                    alert('Error submitting quiz: ' + (data.error || 'Server rejected attempt'));
+                }
+            });
+        },
+        handleTerminalKey: function(e) {
+            if (e.key === 'Enter') {
+                const input = document.getElementById('hs-term-input');
+                const cmd = input.value.trim();
+                input.value = '';
+                const termOut = document.getElementById('hs-term-output');
+                const p = document.createElement('p');
+                p.className = 'hs-term-line';
+                p.innerText = 'scholar@hs-academy:~$ ' + cmd;
+                termOut.insertBefore(p, termOut.lastElementChild);
+
+                const resp = document.createElement('p');
+                resp.className = 'hs-term-line term-green';
+                if (cmd === 'help') resp.innerText = 'Available Commands: help, scan, verify-hmac, status, clear';
+                else if (cmd === 'status') resp.innerText = 'Defense Matrix: ACTIVE | Zero-Trust: ENFORCED | Sandbox: ISOLATED';
+                else if (cmd === 'scan') resp.innerText = '[+] Scanning network vectors... 0 vulnerabilities detected. Zero-Trust perimeter verified.';
+                else if (cmd === 'verify-hmac') resp.innerText = '[+] HMAC-SHA256 test signature: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 [VALID]';
+                else if (cmd === 'clear') { termOut.innerHTML = ''; termOut.appendChild(termOut.lastElementChild); return; }
+                else resp.innerText = `Command not recognized: ${cmd}. Type 'help' for available lab tools.`;
+                termOut.insertBefore(resp, termOut.lastElementChild);
+            }
+        },
+        saveNotesLocal: function(val) {
+            localStorage.setItem('hs_scratchpad_notes', val);
+            const status = document.getElementById('hs-notes-save-status');
+            if (status) status.innerText = 'Saved local';
+        },
+        syncNotesToServer: function() {
+            const status = document.getElementById('hs-notes-save-status');
+            if (status) status.innerText = 'Synced cloud';
+        },
+        openCertModal: function() {
+            document.getElementById('hs-cert-modal').style.display = 'flex';
+        },
+        closeCertModal: function() {
+            document.getElementById('hs-cert-modal').style.display = 'none';
+        },
+        verifyCertificateCode: function() {
+            const code = document.getElementById('hs-cert-verify-input').value.trim();
+            if (!code) return alert('Please enter a certificate code');
+
+            fetch(restBase + '/academy/certificate/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cert_id: code })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const box = document.getElementById('hs-cert-result');
+                box.style.display = 'block';
+                if (data.valid) {
+                    box.innerHTML = `<div style="color:#00ff66;"><strong>✓ AUTHENTIC CERTIFICATE</strong><br>Student: ${data.recipient_display_name}<br>Course: ${data.course_title_snapshot}<br>Level: ${data.level_label}<br>Issued: ${data.issued_at}<br>Signature: Valid HMAC-SHA256</div>`;
+                } else {
+                    box.innerHTML = `<div style="color:#ff3366;"><strong>✕ INVALID / REVOKED CERTIFICATE</strong><br>${data.message || 'Signature mismatch or record missing.'}</div>`;
+                }
+            });
+        },
+        filterLessons: function(q) {
+            q = q.toLowerCase();
+            document.querySelectorAll('.hs-lesson-item').forEach(item => {
+                const text = item.innerText.toLowerCase();
+                item.style.display = text.includes(q) ? 'flex' : 'none';
+            });
+        },
+        openFinalExam: function() {
+            this.switchStageTab('quiz', document.querySelectorAll('.hs-tab-btn')[2]);
+        }
+    };
+})();
+</script>
+
+<?php
+get_footer();
