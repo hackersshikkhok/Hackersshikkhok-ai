@@ -168,6 +168,28 @@ final class Database {
                 checksum_sha256 VARCHAR(64) NOT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY  (id)
+            ) $charset_collate;",
+            "CREATE TABLE {$p}custom_tools (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                tool_slug VARCHAR(64) NOT NULL,
+                tool_name VARCHAR(128) NOT NULL,
+                center_slug VARCHAR(64) NOT NULL,
+                category_slug VARCHAR(64) NOT NULL,
+                icon VARCHAR(64) NOT NULL DEFAULT 'Terminal',
+                description TEXT NOT NULL,
+                input_schema LONGTEXT NULL,
+                output_type VARCHAR(48) NOT NULL DEFAULT 'text',
+                processor_type VARCHAR(48) NOT NULL DEFAULT 'client',
+                status VARCHAR(24) NOT NULL DEFAULT 'published',
+                version VARCHAR(16) NOT NULL DEFAULT '1.0.0',
+                seo_title VARCHAR(191) NULL,
+                seo_description TEXT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY  (id),
+                UNIQUE KEY uq_tool_slug (tool_slug),
+                KEY idx_center_cat (center_slug, category_slug),
+                KEY idx_status (status)
             ) $charset_collate;"
         );
 

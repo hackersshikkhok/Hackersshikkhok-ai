@@ -67,6 +67,66 @@ final class RestController {
             'callback'            => array( self::class, 'get_migration_status' ),
             'permission_callback' => static fn() => current_user_can( 'manage_options' ),
         ) );
+
+        // 500+ Tools Super Platform Endpoints
+        register_rest_route( 'hackersshikkhok/v1', '/tools/catalog', array(
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => array( self::class, 'get_tools_catalog' ),
+            'permission_callback' => '__return_true',
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/tools/execute', array(
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => array( \HackersShikkhok\Core\Tools\ToolExecutionEngine::class, 'handle_execution_request' ),
+            'permission_callback' => '__return_true',
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/tools/register', array(
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => array( \HackersShikkhok\Core\Tools\ToolFactory::class, 'register_tool' ),
+            'permission_callback' => static fn() => current_user_can( 'manage_options' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/tools/health', array(
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => array( self::class, 'get_tools_health' ),
+            'permission_callback' => '__return_true',
+        ) );
+    }
+
+    public static function get_tools_catalog( WP_REST_Request $request ): WP_REST_Response {
+        $q = sanitize_text_field( (string) $request->get_param( 'q' ) );
+        $center = sanitize_key( (string) $request->get_param( 'center' ) );
+
+        if ( ! empty( $q ) ) {
+            $tools = \HackersShikkhok\Core\Tools\UniversalToolRegistry::search_tools( $q, 50 );
+        } else {
+            $all = \HackersShikkhok\Core\Tools\UniversalToolRegistry::get_all_tools();
+            if ( ! empty( $center ) ) {
+                $tools = array_values( array_filter( $all, fn( $t ) => ( $t['center'] ?? '' ) === $center ) );
+            } else {
+                $tools = array_values( $all );
+            }
+        }
+
+        $centers = \HackersShikkhok\Core\Tools\UniversalToolRegistry::get_centers();
+        $tool_of_the_day = \HackersShikkhok\Core\Tools\UniversalToolRegistry::get_tool_of_the_day();
+
+        return new WP_REST_Response( array(
+            'success' => true,
+            'total_tools' => count( $tools ),
+            'centers' => array_values( $centers ),
+            'tools' => $tools,
+            'tool_of_the_day' => $tool_of_the_day,
+        ), 200 );
+    }
+
+    public static function get_tools_health( WP_REST_Request $request ): WP_REST_Response {
+        $summary = \HackersShikkhok\Core\Tools\ToolFactory::get_tools_health_summary();
+        return new WP_REST_Response( array(
+            'success' => true,
+            'data' => $summary,
+        ), 200 );
     }
 
     public static function get_health( WP_REST_Request $request ): WP_REST_Response {

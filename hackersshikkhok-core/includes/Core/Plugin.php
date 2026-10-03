@@ -11,6 +11,7 @@ use HackersShikkhok\Core\Demo\LiveDemo;
 use HackersShikkhok\Core\Tools\ToolsEngine;
 use HackersShikkhok\Core\Tools\CssRgbLab;
 use HackersShikkhok\Core\AI\UniversalAutopilotEngine;
+use HackersShikkhok\Core\AI\AiTutorEngine;
 use HackersShikkhok\Core\SEO\SeoEngine;
 use HackersShikkhok\Core\SEO\NativeSeoAndSitemapEngine;
 use HackersShikkhok\Core\SEO\InternalLinker;
@@ -19,6 +20,10 @@ use HackersShikkhok\Core\Email\NativeBrandedEmailEngine;
 use HackersShikkhok\Core\Auth\NativeBrandedAuthEngine;
 use HackersShikkhok\Core\Editor\NativeClassicEditorEngine;
 use HackersShikkhok\Core\Academy\CyberAcademyLmsEngine;
+use HackersShikkhok\Core\Labs\HardwareAndIotEngine;
+use HackersShikkhok\Core\Labs\EngineeringAndCncLab;
+use HackersShikkhok\Core\Community\GamificationAndChallenges;
+use HackersShikkhok\Core\Community\BookmarksAndNotifications;
 use HackersShikkhok\Core\Security\SecurityManager;
 use HackersShikkhok\Core\API\RestController;
 use HackersShikkhok\Core\Community\UniversalInteractionEngine;
@@ -52,8 +57,14 @@ final class Plugin {
         NativeBrandedAuthEngine::register();
         NativeClassicEditorEngine::register();
         CyberAcademyLmsEngine::register();
+        HardwareAndIotEngine::register();
+        EngineeringAndCncLab::register();
+        GamificationAndChallenges::register();
+        BookmarksAndNotifications::register();
+        AiTutorEngine::register();
         InternalLinker::register();
         RestController::register();
+        EcosystemControlCenter::register();
 
         if ( is_admin() ) {
             ControlCenter::register();
