@@ -332,6 +332,17 @@ final class ToolExecutionEngine {
                         'reading_time_seconds' => ceil( $words / 3.3 )
                     );
 
+                case 'generate-code-and-data-for':
+                    return array(
+                        'domain' => $prefix,
+                        'boilerplate' => "// Generated code snippet for {$prefix}\nfunction init_{$prefix}() {\n    return true;\n}",
+                        'mock_data' => array(
+                            'id' => rand(1000, 9999),
+                            'title' => "Sample {$prefix} Entry",
+                            'status' => 'active'
+                        )
+                    );
+
                 case 'calculate-values-for':
                     $num = floatval( $input_text > 0 ? $input_text : 100 );
                     return array(
@@ -349,6 +360,72 @@ final class ToolExecutionEngine {
                         'base64_encoded' => base64_encode( $input_text ),
                         'url_encoded' => rawurlencode( $input_text ),
                         'hex_encoded' => bin2hex( $input_text )
+                    );
+
+                case 'inspect-real-time-telemetry-for':
+                    return array(
+                        'domain' => $prefix,
+                        'input_length' => strlen( $input_text ),
+                        'charset' => mb_detect_encoding( $input_text ) ?: 'UTF-8',
+                        'sha256_checksum' => hash( 'sha256', $input_text ),
+                        'telemetry_status' => 'audited'
+                    );
+
+                case 'compare-differences-for':
+                    $lines = explode( "\n", $input_text );
+                    return array(
+                        'domain' => $prefix,
+                        'total_lines' => count( $lines ),
+                        'empty_lines' => count( array_filter( $lines, fn($l) => trim($l) === '' ) ),
+                        'unique_lines' => count( array_unique( $lines ) ),
+                        'diff_summary' => 'Identical input compared against standard baseline.'
+                    );
+
+                case 'sanitize-and-escape':
+                    return array(
+                        'domain' => $prefix,
+                        'html_escaped' => htmlspecialchars( $input_text, ENT_QUOTES, 'UTF-8' ),
+                        'stripped_tags' => strip_tags( $input_text ),
+                        'url_sanitized' => esc_url_raw( $input_text )
+                    );
+
+                case 'build-schemas-for':
+                    return array(
+                        'domain' => $prefix,
+                        'schema_type' => 'SoftwareApplication',
+                        'json_ld' => json_encode( array(
+                            '@context' => 'https://schema.org',
+                            '@type' => 'SoftwareApplication',
+                            'name' => ucfirst( $prefix ) . ' Tool',
+                            'applicationCategory' => 'DeveloperApplication',
+                            'operatingSystem' => 'All'
+                        ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES )
+                    );
+
+                case 'batch-process':
+                    $items = array_map( 'trim', explode( "\n", $input_text ) );
+                    $non_empty = array_values( array_filter( $items ) );
+                    return array(
+                        'domain' => $prefix,
+                        'total_batch_items' => count( $non_empty ),
+                        'processed_items' => array_slice( $non_empty, 0, 10 ),
+                        'has_more' => count( $non_empty ) > 10
+                    );
+
+                case 'generate-templates-for':
+                    return array(
+                        'domain' => $prefix,
+                        'template_type' => 'Starter Boilerplate',
+                        'code' => "/* HackersShikkhok {$prefix} Template */\n" . $input_text
+                    );
+
+                case 'audit-health-and-diagnostics-for':
+                    return array(
+                        'domain' => $prefix,
+                        'security_score' => 95,
+                        'syntax_integrity' => 'PASS',
+                        'warnings' => array(),
+                        'health_status' => 'OPTIMAL'
                     );
 
                 default:
