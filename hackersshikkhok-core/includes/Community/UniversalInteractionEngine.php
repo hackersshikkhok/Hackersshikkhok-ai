@@ -38,12 +38,71 @@ final class UniversalInteractionEngine {
         $object_id = absint( $request->get_param( 'object_id' ) );
         $user_id   = get_current_user_id();
 
+        if ( ! $user_id || ! $object_id ) {
+            return new \WP_REST_Response( array( 'error' => 'Invalid parameters' ), 400 );
+        }
+
+        $result_state = 'active';
+
+        if ( 'like' === $action ) {
+            $likes = (array) get_user_meta( $user_id, '_hs_liked_objects', true );
+            if ( in_array( $object_id, $likes, true ) ) {
+                $likes = array_diff( $likes, array( $object_id ) );
+                $result_state = 'unliked';
+            } else {
+                $likes[] = $object_id;
+                $result_state = 'liked';
+                $author_id = (int) get_post_field( 'post_author', $object_id );
+                self::dispatch_deduplicated_notification( $author_id, 'like', $object_id, $user_id );
+            }
+            update_user_meta( $user_id, '_hs_liked_objects', array_values( array_unique( $likes ) ) );
+        } elseif ( 'follow' === $action ) {
+            $following = (array) get_user_meta( $user_id, '_hs_following_users', true );
+            if ( in_array( $object_id, $following, true ) ) {
+                $following = array_diff( $following, array( $object_id ) );
+                $result_state = 'unfollowed';
+            } else {
+                $following[] = $object_id;
+                $result_state = 'followed';
+                self::dispatch_deduplicated_notification( $object_id, 'follow', 0, $user_id );
+            }
+            update_user_meta( $user_id, '_hs_following_users', array_values( array_unique( $following ) ) );
+        } elseif ( 'save' === $action || 'favorite' === $action ) {
+            $saved = (array) get_user_meta( $user_id, '_hs_saved_objects', true );
+            if ( in_array( $object_id, $saved, true ) ) {
+                $saved = array_diff( $saved, array( $object_id ) );
+                $result_state = 'unsaved';
+            } else {
+                $saved[] = $object_id;
+                $result_state = 'saved';
+            }
+            update_user_meta( $user_id, '_hs_saved_objects', array_values( array_unique( $saved ) ) );
+        } elseif ( 'block' === $action ) {
+            $blocked = (array) get_user_meta( $user_id, '_hs_blocked_users', true );
+            $blocked[] = $object_id;
+            update_user_meta( $user_id, '_hs_blocked_users', array_values( array_unique( $blocked ) ) );
+            $result_state = 'blocked';
+        } elseif ( 'report' === $action ) {
+            $reason = sanitize_text_field( (string) $request->get_param( 'reason' ) ?: 'General policy violation' );
+            $reports = (array) get_option( '_hs_reported_content_queue', array() );
+            $reports[] = array(
+                'reporter_id' => $user_id,
+                'target_id'   => $object_id,
+                'reason'      => $reason,
+                'reported_at' => gmdate( 'Y-m-d H:i:s' ),
+                'status'      => 'pending_moderation',
+            );
+            update_option( '_hs_reported_content_queue', $reports );
+            $result_state = 'reported';
+        }
+
         return new \WP_REST_Response( array(
-            'status'      => 'success',
-            'brand'       => 'Hackers শিক্ষক',
-            'action_type' => $action,
-            'object_id'   => $object_id,
-            'user_id'     => $user_id,
+            'status'       => 'success',
+            'brand'        => 'Hackers শিক্ষক',
+            'action_type'  => $action,
+            'object_id'    => $object_id,
+            'user_id'      => $user_id,
+            'result_state' => $result_state,
         ), 200 );
     }
 }
