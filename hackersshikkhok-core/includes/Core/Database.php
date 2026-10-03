@@ -3,8 +3,12 @@ declare(strict_types=1);
 
 namespace HackersShikkhok\Core\Core;
 
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
 final class Database {
-    public const DB_VERSION = '4.0.0';
+    public const DB_VERSION = '4.1.0';
 
     public static function install_tables(): void {
         global $wpdb;
@@ -24,7 +28,10 @@ final class Database {
             ) $charset_collate;",
             "CREATE TABLE {$p}ai_jobs (
                 job_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                job_type VARCHAR(64) NOT NULL DEFAULT 'autopilot',
                 center_slug VARCHAR(64) NOT NULL,
+                target_cpt VARCHAR(64) NOT NULL DEFAULT 'tutorials',
+                post_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
                 status VARCHAR(32) NOT NULL DEFAULT 'queued',
                 retry_count TINYINT UNSIGNED NOT NULL DEFAULT 0,
                 quality_score TINYINT UNSIGNED NOT NULL DEFAULT 0,
@@ -32,18 +39,22 @@ final class Database {
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY  (job_id),
                 KEY idx_status_scheduled (status, created_at),
-                KEY idx_center_slug (center_slug)
+                KEY idx_center_slug (center_slug),
+                KEY idx_target_post (target_cpt, post_id)
             ) $charset_collate;",
             "CREATE TABLE {$p}wallet_ledger (
                 tx_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                 user_id BIGINT UNSIGNED NOT NULL,
-                amount_bdt DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-                points_delta INT NOT NULL DEFAULT 0,
                 tx_type VARCHAR(48) NOT NULL,
-                reference_hash VARCHAR(64) NOT NULL,
+                amount_bdt DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                balance_after DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                points_delta INT NOT NULL DEFAULT 0,
+                description TEXT NULL,
+                reference_id VARCHAR(100) NOT NULL DEFAULT '',
+                reference_hash VARCHAR(64) NOT NULL DEFAULT '',
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY  (tx_id),
-                UNIQUE KEY idx_tx_reference (reference_hash),
+                KEY idx_tx_reference (reference_id),
                 KEY idx_user_created (user_id, created_at)
             ) $charset_collate;",
             "CREATE TABLE {$p}certificates (
@@ -71,10 +82,42 @@ final class Database {
                 completed_labs LONGTEXT NULL,
                 quiz_scores LONGTEXT NULL,
                 overall_percent TINYINT UNSIGNED NOT NULL DEFAULT 0,
+                is_completed TINYINT UNSIGNED NOT NULL DEFAULT 0,
+                completed_at DATETIME NULL,
                 last_activity DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY  (id),
                 UNIQUE KEY uq_user_course (user_id, course_id),
                 KEY idx_user_activity (user_id, last_activity)
+            ) $charset_collate;",
+            "CREATE TABLE {$p}quiz_attempts (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                user_id BIGINT UNSIGNED NOT NULL,
+                course_id BIGINT UNSIGNED NOT NULL,
+                quiz_id VARCHAR(64) NOT NULL,
+                score_percent TINYINT UNSIGNED NOT NULL DEFAULT 0,
+                passed TINYINT UNSIGNED NOT NULL DEFAULT 0,
+                xp_awarded INT UNSIGNED NOT NULL DEFAULT 0,
+                answers_json LONGTEXT NULL,
+                attempted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY  (id),
+                KEY idx_user_quiz (user_id, course_id, quiz_id),
+                KEY idx_attempt_date (attempted_at)
+            ) $charset_collate;",
+            "CREATE TABLE {$p}assignment_submissions (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                user_id BIGINT UNSIGNED NOT NULL,
+                course_id BIGINT UNSIGNED NOT NULL,
+                assignment_id VARCHAR(64) NOT NULL,
+                submission_content LONGTEXT NOT NULL,
+                attachment_url VARCHAR(255) NULL,
+                status VARCHAR(24) NOT NULL DEFAULT 'pending',
+                grade INT NULL,
+                feedback TEXT NULL,
+                graded_by BIGINT UNSIGNED DEFAULT 0,
+                submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY  (id),
+                KEY idx_user_course_assignment (user_id, course_id, assignment_id)
             ) $charset_collate;",
             "CREATE TABLE {$p}audit_logs (
                 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

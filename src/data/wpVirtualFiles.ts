@@ -677,8 +677,12 @@ declare(strict_types=1);
 
 namespace HackersShikkhok\\Core\\Core;
 
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
 final class Database {
-    public const DB_VERSION = '4.0.0';
+    public const DB_VERSION = '4.1.0';
 
     public static function install_tables(): void {
         global $wpdb;
@@ -698,7 +702,10 @@ final class Database {
             ) $charset_collate;",
             "CREATE TABLE {$p}ai_jobs (
                 job_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                job_type VARCHAR(64) NOT NULL DEFAULT 'autopilot',
                 center_slug VARCHAR(64) NOT NULL,
+                target_cpt VARCHAR(64) NOT NULL DEFAULT 'tutorials',
+                post_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
                 status VARCHAR(32) NOT NULL DEFAULT 'queued',
                 retry_count TINYINT UNSIGNED NOT NULL DEFAULT 0,
                 quality_score TINYINT UNSIGNED NOT NULL DEFAULT 0,
@@ -706,18 +713,22 @@ final class Database {
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY  (job_id),
                 KEY idx_status_scheduled (status, created_at),
-                KEY idx_center_slug (center_slug)
+                KEY idx_center_slug (center_slug),
+                KEY idx_target_post (target_cpt, post_id)
             ) $charset_collate;",
             "CREATE TABLE {$p}wallet_ledger (
                 tx_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                 user_id BIGINT UNSIGNED NOT NULL,
-                amount_bdt DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-                points_delta INT NOT NULL DEFAULT 0,
                 tx_type VARCHAR(48) NOT NULL,
-                reference_hash VARCHAR(64) NOT NULL,
+                amount_bdt DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                balance_after DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                points_delta INT NOT NULL DEFAULT 0,
+                description TEXT NULL,
+                reference_id VARCHAR(100) NOT NULL DEFAULT '',
+                reference_hash VARCHAR(64) NOT NULL DEFAULT '',
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY  (tx_id),
-                UNIQUE KEY idx_tx_reference (reference_hash),
+                KEY idx_tx_reference (reference_id),
                 KEY idx_user_created (user_id, created_at)
             ) $charset_collate;",
             "CREATE TABLE {$p}certificates (
@@ -745,10 +756,42 @@ final class Database {
                 completed_labs LONGTEXT NULL,
                 quiz_scores LONGTEXT NULL,
                 overall_percent TINYINT UNSIGNED NOT NULL DEFAULT 0,
+                is_completed TINYINT UNSIGNED NOT NULL DEFAULT 0,
+                completed_at DATETIME NULL,
                 last_activity DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY  (id),
                 UNIQUE KEY uq_user_course (user_id, course_id),
                 KEY idx_user_activity (user_id, last_activity)
+            ) $charset_collate;",
+            "CREATE TABLE {$p}quiz_attempts (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                user_id BIGINT UNSIGNED NOT NULL,
+                course_id BIGINT UNSIGNED NOT NULL,
+                quiz_id VARCHAR(64) NOT NULL,
+                score_percent TINYINT UNSIGNED NOT NULL DEFAULT 0,
+                passed TINYINT UNSIGNED NOT NULL DEFAULT 0,
+                xp_awarded INT UNSIGNED NOT NULL DEFAULT 0,
+                answers_json LONGTEXT NULL,
+                attempted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY  (id),
+                KEY idx_user_quiz (user_id, course_id, quiz_id),
+                KEY idx_attempt_date (attempted_at)
+            ) $charset_collate;",
+            "CREATE TABLE {$p}assignment_submissions (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                user_id BIGINT UNSIGNED NOT NULL,
+                course_id BIGINT UNSIGNED NOT NULL,
+                assignment_id VARCHAR(64) NOT NULL,
+                submission_content LONGTEXT NOT NULL,
+                attachment_url VARCHAR(255) NULL,
+                status VARCHAR(24) NOT NULL DEFAULT 'pending',
+                grade INT NULL,
+                feedback TEXT NULL,
+                graded_by BIGINT UNSIGNED DEFAULT 0,
+                submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY  (id),
+                KEY idx_user_course_assignment (user_id, course_id, assignment_id)
             ) $charset_collate;",
             "CREATE TABLE {$p}audit_logs (
                 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -3242,13 +3285,6 @@ final class NativeClassicEditorEngine {
     language: 'php',
     updatedAt: '2026-09-30',
     content: `<?php
-/**
- * Complete Professional Cybersecurity Academy & Learning System (LMS Engine)
- * Levels 0-8 · Career Learning Paths · 17 Lesson Types · Safe Cyber Lab & Terminal Validator
- * Quiz/Question Bank · Timed Final Exam · Assignment Grader · Certificate Verification & Historical Integrity
- * Brand: Hackers শিক্ষক (https://hackersshikkhok.com)
- */
-
 declare(strict_types=1);
 
 namespace HackersShikkhok\\Core\\Academy;
@@ -3257,271 +3293,123 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-final class CyberAcademyLmsEngine {
-    public const LEVELS = array(
-        0 => 'Level 0 — Digital & Computer Foundation',
-        1 => 'Level 1 — Cybersecurity Foundation',
-        2 => 'Level 2 — Networking & Linux',
-        3 => 'Level 3 — Security Fundamentals',
-        4 => 'Level 4 — Ethical Security Testing',
-        5 => 'Level 5 — Advanced Security',
-        6 => 'Level 6 — Professional Specialization',
-        7 => 'Level 7 — Advanced Practical / Professional Labs',
-        8 => 'Level 8 — Expert / Research-Oriented Learning',
-    );
+use WP_REST_Request;
+use WP_REST_Response;
 
-    public const LESSON_TYPES = array(
-        'text', 'video', 'audio', 'image', 'pdf', 'slide', 'interactive',
-        'quiz', 'assignment', 'coding_exercise', 'terminal_exercise',
-        'practical_lab', 'case_study', 'scenario', 'simulation',
-        'downloadable_resource', 'assessment'
-    );
+/**
+ * Cyber Academy LMS Engine — Authoritative Progress, HMAC Certificates, DB Submissions & Labs
+ * Brand: Hackers শিক্ষক (https://hackersshikkhok.com)
+ */
+final class CyberAcademyLmsEngine {
 
     public static function register(): void {
-        add_action( 'init', array( self::class, 'register_academy_entities_and_rewrites' ) );
         add_action( 'rest_api_init', array( self::class, 'register_academy_rest_routes' ) );
-        add_filter( 'map_meta_cap', array( self::class, 'enforce_instructor_and_student_isolation' ), 10, 4 );
-    }
-
-    public static function register_academy_entities_and_rewrites(): void {
-        register_post_type( 'hs_learning_path', array(
-            'label'        => 'Career Learning Paths',
-            'public'       => true,
-            'show_in_rest' => true,
-            'supports'     => array( 'title', 'editor', 'thumbnail', 'custom-fields' ),
-            'rewrite'      => array( 'slug' => 'academy/path' ),
-        ) );
-
-        register_post_type( 'hs_cyber_lab', array(
-            'label'        => 'Authorized Cyber Labs',
-            'public'       => true,
-            'show_in_rest' => true,
-            'supports'     => array( 'title', 'editor', 'custom-fields' ),
-            'rewrite'      => array( 'slug' => 'academy/lab' ),
-        ) );
-
-        add_rewrite_rule(
-            '^academy/certificate/([A-Za-z0-9\\-_]+)/?$',
-            'index.php?hs_verify_certificate_id=$matches[1]',
-            'top'
-        );
-    }
-
-    public static function enforce_instructor_and_student_isolation( array $caps, string $cap, int $user_id, array $args ): array {
-        if ( in_array( $cap, array( 'edit_post', 'delete_post' ), true ) && ! empty( $args[0] ) ) {
-            $post = get_post( (int) $args[0] );
-            if ( $post && in_array( $post->post_type, array( 'hs_course', 'hs_cyber_lab', 'hs_learning_path' ), true ) ) {
-                if ( (int) $post->post_author !== $user_id && ! user_can( $user_id, 'manage_options' ) ) {
-                    return array( 'do_not_allow' );
-                }
-            }
-        }
-        return $caps;
     }
 
     public static function register_academy_rest_routes(): void {
         register_rest_route( 'hackersshikkhok/v1', '/academy/verify-certificate/(?P<cert_id>[A-Za-z0-9\\-_]+)', array(
             'methods'             => 'GET',
             'permission_callback' => '__return_true',
-            'callback'            => array( self::class, 'verify_certificate_endpoint' ),
+            'callback'            => array( self::class, 'verify_certificate' ),
         ) );
 
-        register_rest_route( 'hackersshikkhok/v1', '/academy/lab-validate', array(
+        register_rest_route( 'hackersshikkhok/v1', '/academy/course/(?P<id>\\d+)/clone', array(
             'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => is_user_logged_in(),
-            'callback'            => array( self::class, 'validate_authorized_lab_flag' ),
+            'permission_callback' => static fn() => current_user_can( 'edit_posts' ),
+            'callback'            => array( self::class, 'clone_course' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/course/(?P<id>\\d+)/health', array(
+            'methods'             => 'GET',
+            'permission_callback' => static fn() => current_user_can( 'edit_posts' ),
+            'callback'            => array( self::class, 'audit_course_health' ),
+        ) );
+
+        register_rest_route( 'hackersshikkhok/v1', '/academy/revoke-certificate', array(
+            'methods'             => 'POST',
+            'permission_callback' => static fn() => current_user_can( 'manage_options' ),
+            'callback'            => array( self::class, 'revoke_certificate' ),
         ) );
 
         register_rest_route( 'hackersshikkhok/v1', '/academy/lesson-progress', array(
             'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'permission_callback' => static fn() => is_user_logged_in(),
             'callback'            => array( self::class, 'record_lesson_progress' ),
         ) );
 
         register_rest_route( 'hackersshikkhok/v1', '/academy/enroll', array(
             'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'permission_callback' => static fn() => is_user_logged_in(),
             'callback'            => array( self::class, 'enroll_student_in_course' ),
         ) );
 
         register_rest_route( 'hackersshikkhok/v1', '/academy/sync-note', array(
             'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'permission_callback' => static fn() => is_user_logged_in(),
             'callback'            => array( self::class, 'sync_student_note' ),
         ) );
 
         register_rest_route( 'hackersshikkhok/v1', '/academy/toggle-bookmark', array(
             'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'permission_callback' => static fn() => is_user_logged_in(),
             'callback'            => array( self::class, 'toggle_lesson_bookmark' ),
         ) );
 
-        register_rest_route( 'hackersshikkhok/v1', '/academy/submit-quiz', array(
+        register_rest_route( 'hackersshikkhok/v1', '/academy/quiz/attempt', array(
             'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'permission_callback' => static fn() => is_user_logged_in(),
             'callback'            => array( self::class, 'submit_quiz_attempt' ),
         ) );
 
-        register_rest_route( 'hackersshikkhok/v1', '/academy/submit-exam', array(
+        register_rest_route( 'hackersshikkhok/v1', '/academy/exam/attempt', array(
             'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'permission_callback' => static fn() => is_user_logged_in(),
             'callback'            => array( self::class, 'submit_exam_attempt' ),
         ) );
 
-        register_rest_route( 'hackersshikkhok/v1', '/academy/submit-assignment', array(
+        register_rest_route( 'hackersshikkhok/v1', '/academy/assignment/submit', array(
             'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => is_user_logged_in(),
+            'permission_callback' => static fn() => is_user_logged_in(),
             'callback'            => array( self::class, 'submit_assignment' ),
         ) );
-
-        register_rest_route( 'hackersshikkhok/v1', '/academy/grade-assignment', array(
-            'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => current_user_can( 'edit_others_posts' ) || current_user_can( 'manage_options' ),
-            'callback'            => array( self::class, 'grade_assignment' ),
-        ) );
-
-        register_rest_route( 'hackersshikkhok/v1', '/academy/revoke-certificate', array(
-            'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => current_user_can( 'manage_options' ),
-            'callback'            => array( self::class, 'revoke_certificate' ),
-        ) );
-
-        register_rest_route( 'hackersshikkhok/v1', '/academy/clone-course', array(
-            'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => current_user_can( 'manage_options' ) || current_user_can( 'edit_posts' ),
-            'callback'            => array( self::class, 'clone_course' ),
-        ) );
-
-        register_rest_route( 'hackersshikkhok/v1', '/academy/course-health/(?P<course_id>\\d+)', array(
-            'methods'             => 'GET',
-            'permission_callback' => static fn(): bool => current_user_can( 'manage_options' ) || current_user_can( 'edit_posts' ),
-            'callback'            => array( self::class, 'get_course_health' ),
-        ) );
-
-        register_rest_route( 'hackersshikkhok/v1', '/academy/student-dashboard', array(
-            'methods'             => 'GET',
-            'permission_callback' => static fn(): bool => is_user_logged_in(),
-            'callback'            => array( self::class, 'get_student_dashboard' ),
-        ) );
-
-        register_rest_route( 'hackersshikkhok/v1', '/backup/restore', array(
-            'methods'             => 'POST',
-            'permission_callback' => static fn(): bool => current_user_can( 'manage_options' ),
-            'callback'            => array( self::class, 'restore_backup_snapshot' ),
-        ) );
     }
 
-    public static function record_lesson_progress( \\WP_REST_Request $request ): \\WP_REST_Response {
-        global $wpdb;
-        $user_id   = get_current_user_id();
-        $course_id = absint( $request->get_param( 'course_id' ) );
-        $lesson_id = sanitize_text_field( (string) $request->get_param( 'lesson_id' ) );
-        $completed = (bool) $request->get_param( 'completed' );
-        $table     = $wpdb->prefix . 'hs_courses_progress';
-
-        if ( ! $course_id || empty( $lesson_id ) ) {
-            return new \\WP_REST_Response( array( 'error' => 'Invalid parameters' ), 400 );
-        }
-
-        // Idempotent insertion or update
-        $existing = $wpdb->get_row( $wpdb->prepare(
-            "SELECT id, is_completed FROM {$table} WHERE user_id = %d AND course_id = %d AND lesson_id = %s LIMIT 1",
-            $user_id, $course_id, $lesson_id
-        ), ARRAY_A );
-
-        $xp_awarded = 0;
-        if ( $existing ) {
-            $wpdb->update(
-                $table,
-                array(
-                    'is_completed'     => $completed ? 1 : 0,
-                    'progress_percent' => $completed ? 100 : 0,
-                    'completed_at'     => $completed ? gmdate( 'Y-m-d H:i:s' ) : null,
-                ),
-                array( 'id' => (int) $existing['id'] ),
-                array( '%d', '%d', '%s' ),
-                array( '%d' )
-            );
-        } else {
-            $wpdb->insert(
-                $table,
-                array(
-                    'user_id'          => $user_id,
-                    'course_id'        => $course_id,
-                    'lesson_id'        => $lesson_id,
-                    'is_completed'     => $completed ? 1 : 0,
-                    'progress_percent' => $completed ? 100 : 0,
-                    'completed_at'     => $completed ? gmdate( 'Y-m-d H:i:s' ) : null,
-                ),
-                array( '%d', '%d', '%s', '%d', '%d', '%s' )
-            );
-            if ( $completed ) {
-                $xp_awarded = 25;
-                $current_xp = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
-                update_user_meta( $user_id, '_hs_learning_xp', $current_xp + $xp_awarded );
+    private static function get_hmac_secret(): string {
+        $secret = defined( 'AUTH_KEY' ) ? AUTH_KEY : '';
+        if ( empty( $secret ) ) {
+            $secret = (string) get_option( 'hs_certificate_hmac_secret', '' );
+            if ( empty( $secret ) ) {
+                $secret = wp_generate_password( 64, true, true );
+                update_option( 'hs_certificate_hmac_secret', $secret );
             }
         }
-
-        // Calculate overall course progress
-        $total_lessons = max( 1, (int) get_post_meta( $course_id, '_hs_total_lessons_count', true ) ?: 12 );
-        $completed_count = (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$table} WHERE user_id = %d AND course_id = %d AND is_completed = 1",
-            $user_id, $course_id
-        ) );
-
-        $course_progress = min( 100, (int) round( ( $completed_count / $total_lessons ) * 100 ) );
-        $cert_eligible = $course_progress >= 100;
-        $issued_cert = null;
-
-        if ( $cert_eligible ) {
-            $issued_cert = self::issue_course_certificate( $user_id, $course_id );
-        }
-
-        return new \\WP_REST_Response( array(
-            'success'              => true,
-            'lesson_completed'     => $completed,
-            'course_progress'      => $course_progress,
-            'xp_awarded'           => $xp_awarded,
-            'certificate_eligible' => $cert_eligible,
-            'certificate'          => $issued_cert,
-        ), 200 );
+        return $secret;
     }
 
-    public static function issue_course_certificate( int $user_id, int $course_id ): ?array {
+    public static function generate_and_save_certificate( int $recipient_id, string $recipient_name, int $course_id, string $course_title, string $level_label = 'Level 1' ): array {
         global $wpdb;
-        $table = $wpdb->prefix . 'hs_certificates';
-        $user  = get_userdata( $user_id );
-        if ( ! $user ) {
-            return null;
-        }
+        $table     = $wpdb->prefix . 'hs_certificates';
+        $cert_code = 'HS-CERT-' . strtoupper( wp_generate_password( 10, false, false ) );
+        $issued_at = gmdate( 'Y-m-d H:i:s' );
 
-        $existing = $wpdb->get_row( $wpdb->prepare(
-            "SELECT cert_code, issued_at, status FROM {$table} WHERE recipient_user_id = %d AND course_id = %d LIMIT 1",
-            $user_id, $course_id
-        ), ARRAY_A );
-
-        if ( $existing ) {
-            return $existing;
-        }
-
-        $course_title = get_the_title( $course_id ) ?: 'Certified Cybersecurity Professional';
-        $cert_code    = 'HS-CERT-' . strtoupper( substr( hash( 'sha256', $user_id . '-' . $course_id . '-' . time() ), 0, 12 ) );
-        $recipient_name = $user->display_name ?: $user->user_login;
-        $level_label  = (string) get_post_meta( $course_id, '_hs_course_level', true ) ?: 'Level 4 — Ethical Security Testing';
+        $hmac_secret = self::get_hmac_secret();
+        $signature   = hash_hmac( 'sha256', "{$recipient_id}|{$course_id}|{$cert_code}|{$issued_at}", $hmac_secret );
 
         $wpdb->insert(
             $table,
             array(
                 'cert_code'              => $cert_code,
-                'recipient_user_id'      => $user_id,
-                'recipient_display_name' => $recipient_name,
+                'recipient_user_id'      => $recipient_id,
+                'recipient_display_name' => sanitize_text_field( $recipient_name ),
                 'course_id'              => $course_id,
-                'course_title_snapshot'  => $course_title,
-                'level_label'            => $level_label,
-                'issued_at'              => gmdate( 'Y-m-d H:i:s' ),
+                'course_title_snapshot'  => sanitize_text_field( $course_title ),
+                'level_label'            => sanitize_text_field( $level_label ),
+                'template_style'         => 'Ethical Security',
+                'sha256_signature'       => $signature,
                 'status'                 => 'valid',
+                'issued_at'              => $issued_at,
             ),
-            array( '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s' )
+            array( '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s' )
         );
 
         return array(
@@ -3529,13 +3417,45 @@ final class CyberAcademyLmsEngine {
             'student_name' => $recipient_name,
             'course'       => $course_title,
             'level'        => $level_label,
-            'issued_at'    => gmdate( 'Y-m-d H:i:s' ),
+            'issued_at'    => $issued_at,
+            'signature'    => $signature,
             'status'       => 'valid',
             'verify_url'   => home_url( '/academy/certificate/' . $cert_code ),
         );
     }
 
-    public static function revoke_certificate( \\WP_REST_Request $request ): \\WP_REST_Response {
+    public static function verify_certificate( WP_REST_Request $request ): WP_REST_Response {
+        global $wpdb;
+        $cert_id = sanitize_text_field( (string) $request->get_param( 'cert_id' ) );
+        $table   = $wpdb->prefix . 'hs_certificates';
+
+        $cert = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE cert_code = %s", $cert_id ), ARRAY_A );
+
+        if ( ! $cert ) {
+            return new WP_REST_Response( array(
+                'valid'   => false,
+                'message' => 'Certificate record not found.',
+            ), 404 );
+        }
+
+        $hmac_secret = self::get_hmac_secret();
+        $expected_sig = hash_hmac( 'sha256', "{$cert['recipient_user_id']}|{$cert['course_id']}|{$cert['cert_code']}|{$cert['issued_at']}", $hmac_secret );
+        $sig_match = hash_equals( $cert['sha256_signature'] ?: $expected_sig, $expected_sig );
+
+        return new WP_REST_Response( array(
+            'valid'                  => 'valid' === $cert['status'] && $sig_match,
+            'cert_code'              => $cert['cert_code'],
+            'recipient_display_name' => $cert['recipient_display_name'],
+            'course_title_snapshot'  => $cert['course_title_snapshot'],
+            'level_label'            => $cert['level_label'],
+            'issued_at'              => $cert['issued_at'],
+            'status'                 => $cert['status'],
+            'signature_verified'     => $sig_match,
+            'issuer'                 => 'Hackers শিক্ষক Cybersecurity Academy (HackersShikkhok.com)',
+        ), 200 );
+    }
+
+    public static function revoke_certificate( WP_REST_Request $request ): WP_REST_Response {
         global $wpdb;
         $cert_code = sanitize_text_field( (string) $request->get_param( 'cert_code' ) );
         $reason    = sanitize_text_field( (string) $request->get_param( 'reason' ) ?: 'Administrative revocation' );
@@ -3549,7 +3469,6 @@ final class CyberAcademyLmsEngine {
             array( '%s' )
         );
 
-        // Record Audit Log
         $audit_table = $wpdb->prefix . 'hs_audit_logs';
         $wpdb->insert(
             $audit_table,
@@ -3564,14 +3483,37 @@ final class CyberAcademyLmsEngine {
             array( '%s', '%d', '%s', '%d', '%s', '%s' )
         );
 
-        return new \\WP_REST_Response( array( 'success' => true, 'cert_code' => $cert_code, 'status' => 'revoked' ), 200 );
+        return new WP_REST_Response( array( 'success' => true, 'cert_code' => $cert_code, 'status' => 'revoked' ), 200 );
     }
 
-    public static function enroll_student_in_course( \\WP_REST_Request $request ): \\WP_REST_Response {
+    public static function enroll_student_in_course( WP_REST_Request $request ): WP_REST_Response {
+        global $wpdb;
         $user_id   = get_current_user_id();
         $course_id = absint( $request->get_param( 'course_id' ) );
-        if ( ! $course_id ) {
-            return new \\WP_REST_Response( array( 'error' => 'Invalid course' ), 400 );
+
+        $course_post = get_post( $course_id );
+        if ( ! $course_post || 'hs_course' !== $course_post->post_type || 'publish' !== $course_post->post_status ) {
+            return new WP_REST_Response( array( 'error' => 'Invalid or unpublished course.' ), 400 );
+        }
+
+        $table = $wpdb->prefix . 'hs_courses_progress';
+        $existing = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM {$table} WHERE user_id = %d AND course_id = %d", $user_id, $course_id ) );
+
+        if ( ! $existing ) {
+            $wpdb->insert(
+                $table,
+                array(
+                    'user_id'           => $user_id,
+                    'course_id'         => $course_id,
+                    'completed_lessons' => wp_json_encode( array() ),
+                    'completed_labs'    => wp_json_encode( array() ),
+                    'quiz_scores'       => wp_json_encode( new \\stdClass() ),
+                    'overall_percent'   => 0,
+                    'is_completed'      => 0,
+                    'last_activity'     => gmdate( 'Y-m-d H:i:s' ),
+                ),
+                array( '%d', '%d', '%s', '%s', '%s', '%d', '%d', '%s' )
+            );
         }
 
         $enrolled = (array) get_user_meta( $user_id, '_hs_enrolled_courses', true );
@@ -3580,62 +3522,115 @@ final class CyberAcademyLmsEngine {
             update_user_meta( $user_id, '_hs_enrolled_courses', array_unique( $enrolled ) );
         }
 
-        return new \\WP_REST_Response( array( 'success' => true, 'enrolled' => true, 'course_id' => $course_id ), 200 );
+        return new WP_REST_Response( array( 'success' => true, 'enrolled' => true, 'course_id' => $course_id ), 200 );
     }
 
-    public static function sync_student_note( \\WP_REST_Request $request ): \\WP_REST_Response {
-        $user_id   = get_current_user_id();
-        $course_id = absint( $request->get_param( 'course_id' ) );
-        $lesson_id = sanitize_text_field( (string) $request->get_param( 'lesson_id' ) );
-        $notes     = sanitize_textarea_field( (string) $request->get_param( 'notes' ) );
-
-        $all_notes = (array) get_user_meta( $user_id, '_hs_course_notes', true );
-        $key = "{$course_id}_{$lesson_id}";
-        $all_notes[ $key ] = array(
-            'text'       => $notes,
-            'updated_at' => gmdate( 'Y-m-d H:i:s' ),
-        );
-        update_user_meta( $user_id, '_hs_course_notes', $all_notes );
-
-        return new \\WP_REST_Response( array( 'success' => true, 'saved_at' => gmdate( 'c' ) ), 200 );
-    }
-
-    public static function toggle_lesson_bookmark( \\WP_REST_Request $request ): \\WP_REST_Response {
+    public static function record_lesson_progress( WP_REST_Request $request ): WP_REST_Response {
+        global $wpdb;
         $user_id   = get_current_user_id();
         $course_id = absint( $request->get_param( 'course_id' ) );
         $lesson_id = sanitize_text_field( (string) $request->get_param( 'lesson_id' ) );
 
-        $bookmarks = (array) get_user_meta( $user_id, '_hs_course_bookmarks', true );
-        $key = "{$course_id}_{$lesson_id}";
-        $is_bookmarked = in_array( $key, $bookmarks, true );
-
-        if ( $is_bookmarked ) {
-            $bookmarks = array_diff( $bookmarks, array( $key ) );
-        } else {
-            $bookmarks[] = $key;
+        if ( ! $course_id || empty( $lesson_id ) ) {
+            return new WP_REST_Response( array( 'error' => 'Missing course or lesson ID' ), 400 );
         }
-        update_user_meta( $user_id, '_hs_course_bookmarks', array_values( array_unique( $bookmarks ) ) );
 
-        return new \\WP_REST_Response( array( 'success' => true, 'bookmarked' => ! $is_bookmarked ), 200 );
+        $table = $wpdb->prefix . 'hs_courses_progress';
+        $row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE user_id = %d AND course_id = %d", $user_id, $course_id ), ARRAY_A );
+
+        $completed_lessons = array();
+        if ( $row && ! empty( $row['completed_lessons'] ) ) {
+            $decoded = json_decode( $row['completed_lessons'], true );
+            if ( is_array( $decoded ) ) {
+                $completed_lessons = $decoded;
+            }
+        }
+
+        $is_new_completion = ! in_array( $lesson_id, $completed_lessons, true );
+        if ( $is_new_completion ) {
+            $completed_lessons[] = $lesson_id;
+        }
+
+        $total_lessons = max( 1, (int) get_post_meta( $course_id, '_hs_curriculum_total_lessons', true ) ?: 10 );
+        $completed_count = count( $completed_lessons );
+        $overall_percent = (int) min( 100, round( ( $completed_count / $total_lessons ) * 100 ) );
+        $is_course_completed = 100 === $overall_percent;
+        $completed_at = $is_course_completed ? gmdate( 'Y-m-d H:i:s' ) : ( $row['completed_at'] ?? null );
+
+        if ( $row ) {
+            $wpdb->update(
+                $table,
+                array(
+                    'completed_lessons' => wp_json_encode( array_values( array_unique( $completed_lessons ) ) ),
+                    'overall_percent'   => $overall_percent,
+                    'is_completed'      => $is_course_completed ? 1 : 0,
+                    'completed_at'      => $completed_at,
+                    'last_activity'     => gmdate( 'Y-m-d H:i:s' ),
+                ),
+                array( 'id' => $row['id'] ),
+                array( '%s', '%d', '%d', '%s', '%s' ),
+                array( '%d' )
+            );
+        } else {
+            $wpdb->insert(
+                $table,
+                array(
+                    'user_id'           => $user_id,
+                    'course_id'         => $course_id,
+                    'completed_lessons' => wp_json_encode( array_values( array_unique( $completed_lessons ) ) ),
+                    'completed_labs'    => wp_json_encode( array() ),
+                    'quiz_scores'       => wp_json_encode( new \\stdClass() ),
+                    'overall_percent'   => $overall_percent,
+                    'is_completed'      => $is_course_completed ? 1 : 0,
+                    'completed_at'      => $completed_at,
+                    'last_activity'     => gmdate( 'Y-m-d H:i:s' ),
+                ),
+                array( '%d', '%d', '%s', '%s', '%s', '%d', '%d', '%s', '%s' )
+            );
+        }
+
+        if ( $is_new_completion ) {
+            $xp_awarded = 15;
+            $current_xp = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
+            update_user_meta( $user_id, '_hs_learning_xp', $current_xp + $xp_awarded );
+        }
+
+        $cert_data = null;
+        if ( $is_course_completed ) {
+            $existing_cert = $wpdb->get_row( $wpdb->prepare( "SELECT cert_code FROM {$wpdb->prefix}hs_certificates WHERE recipient_user_id = %d AND course_id = %d", $user_id, $course_id ) );
+            if ( ! $existing_cert ) {
+                $user = get_userdata( $user_id );
+                $name = $user ? ( $user->display_name ?: $user->user_login ) : 'Cyber Scholar';
+                $title = get_the_title( $course_id ) ?: 'Advanced Ethical Hacking';
+                $cert_data = self::generate_and_save_certificate( $user_id, $name, $course_id, $title, 'Level 1 Scholar' );
+            }
+        }
+
+        return new WP_REST_Response( array(
+            'success'              => true,
+            'lesson_id'            => $lesson_id,
+            'completed_lessons'    => $completed_lessons,
+            'overall_percent'      => $overall_percent,
+            'is_course_completed'  => $is_course_completed,
+            'certificate'          => $cert_data,
+        ), 200 );
     }
 
-    public static function submit_quiz_attempt( \\WP_REST_Request $request ): \\WP_REST_Response {
+    public static function submit_quiz_attempt( WP_REST_Request $request ): WP_REST_Response {
+        global $wpdb;
         $user_id   = get_current_user_id();
         $course_id = absint( $request->get_param( 'course_id' ) );
         $quiz_id   = sanitize_text_field( (string) $request->get_param( 'quiz_id' ) );
-        $submitted = (array) $request->get_param( 'answers' ); // Array of { question_id, selected_option }
+        $submitted = (array) $request->get_param( 'answers' );
 
-        // Server-Side Authoritative Grading: Never trust client is_correct flags
-        // Fetch official question bank from secure postmeta or default curriculum bank
         $question_bank = (array) get_post_meta( $course_id, '_hs_curriculum_quiz_bank', true );
         if ( empty( $question_bank ) ) {
-            // Default curriculum question bank for standard cybersecurity assessments
             $question_bank = array(
-                'q1' => array( 'correct_idx' => 1, 'marks' => 1 ),
-                'q2' => array( 'correct_idx' => 2, 'marks' => 1 ),
-                'q3' => array( 'correct_idx' => 0, 'marks' => 1 ),
-                'q4' => array( 'correct_idx' => 3, 'marks' => 1 ),
-                'q5' => array( 'correct_idx' => 1, 'marks' => 1 ),
+                'q1' => array( 'correct_idx' => 1 ),
+                'q2' => array( 'correct_idx' => 2 ),
+                'q3' => array( 'correct_idx' => 0 ),
+                'q4' => array( 'correct_idx' => 3 ),
+                'q5' => array( 'correct_idx' => 1 ),
             );
         }
 
@@ -3654,35 +3649,46 @@ final class CyberAcademyLmsEngine {
         $passing_mark  = (int) get_post_meta( $course_id, '_hs_passing_score', true ) ?: 70;
         $passed        = $score_percent >= $passing_mark;
 
-        $xp = $passed ? 50 : 10;
-        $current_xp = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
-        update_user_meta( $user_id, '_hs_learning_xp', $current_xp + $xp );
+        $attempts_table = $wpdb->prefix . 'hs_quiz_attempts';
+        $prev_passed = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$attempts_table} WHERE user_id = %d AND course_id = %d AND quiz_id = %s AND passed = 1", $user_id, $course_id, $quiz_id ) );
 
-        // Store attempt record in user attempts history
-        $attempts = (array) get_user_meta( $user_id, "_hs_quiz_attempts_{$course_id}_{$quiz_id}", true );
-        $attempts[] = array(
-            'attempted_at'  => gmdate( 'Y-m-d H:i:s' ),
-            'score_percent' => $score_percent,
-            'passed'        => $passed,
+        $xp_to_award = ( $passed && ! $prev_passed ) ? 50 : 0;
+        if ( $xp_to_award > 0 ) {
+            $current_xp = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
+            update_user_meta( $user_id, '_hs_learning_xp', $current_xp + $xp_to_award );
+        }
+
+        $wpdb->insert(
+            $attempts_table,
+            array(
+                'user_id'       => $user_id,
+                'course_id'     => $course_id,
+                'quiz_id'       => $quiz_id,
+                'score_percent' => $score_percent,
+                'passed'        => $passed ? 1 : 0,
+                'xp_awarded'    => $xp_to_award,
+                'answers_json'  => wp_json_encode( $submitted ),
+                'attempted_at'  => gmdate( 'Y-m-d H:i:s' ),
+            ),
+            array( '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s' )
         );
-        update_user_meta( $user_id, "_hs_quiz_attempts_{$course_id}_{$quiz_id}", $attempts );
 
-        return new \\WP_REST_Response( array(
+        return new WP_REST_Response( array(
             'success'       => true,
             'passed'        => $passed,
             'score_percent' => $score_percent,
-            'xp_awarded'    => $xp,
+            'xp_awarded'    => $xp_to_award,
             'correct_count' => $correct_count,
             'total_count'   => $total_questions,
         ), 200 );
     }
 
-    public static function submit_exam_attempt( \\WP_REST_Request $request ): \\WP_REST_Response {
+    public static function submit_exam_attempt( WP_REST_Request $request ): WP_REST_Response {
+        global $wpdb;
         $user_id   = get_current_user_id();
         $course_id = absint( $request->get_param( 'course_id' ) );
         $submitted = (array) $request->get_param( 'answers' );
 
-        // Server-side authoritative final examination grading
         $exam_bank = (array) get_post_meta( $course_id, '_hs_curriculum_exam_bank', true );
         if ( empty( $exam_bank ) ) {
             $exam_bank = array(
@@ -3709,13 +3715,33 @@ final class CyberAcademyLmsEngine {
         }
 
         $percent = (int) round( ( $correct_count / $total_questions ) * 100 );
-        $passed = $percent >= 75;
+        $passed  = $percent >= 75;
 
-        $xp = $passed ? 200 : 25;
-        $current_xp = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
-        update_user_meta( $user_id, '_hs_learning_xp', $current_xp + $xp );
+        $attempts_table = $wpdb->prefix . 'hs_quiz_attempts';
+        $prev_passed = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$attempts_table} WHERE user_id = %d AND course_id = %d AND quiz_id = 'final_exam' AND passed = 1", $user_id, $course_id ) );
 
-        return new \\WP_REST_Response( array(
+        $xp = ( $passed && ! $prev_passed ) ? 200 : 0;
+        if ( $xp > 0 ) {
+            $current_xp = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
+            update_user_meta( $user_id, '_hs_learning_xp', $current_xp + $xp );
+        }
+
+        $wpdb->insert(
+            $attempts_table,
+            array(
+                'user_id'       => $user_id,
+                'course_id'     => $course_id,
+                'quiz_id'       => 'final_exam',
+                'score_percent' => $percent,
+                'passed'        => $passed ? 1 : 0,
+                'xp_awarded'    => $xp,
+                'answers_json'  => wp_json_encode( $submitted ),
+                'attempted_at'  => gmdate( 'Y-m-d H:i:s' ),
+            ),
+            array( '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s' )
+        );
+
+        return new WP_REST_Response( array(
             'success'       => true,
             'passed'        => $passed,
             'score_percent' => $percent,
@@ -3725,203 +3751,119 @@ final class CyberAcademyLmsEngine {
         ), 200 );
     }
 
-    public static function submit_assignment( \\WP_REST_Request $request ): \\WP_REST_Response {
+    public static function submit_assignment( WP_REST_Request $request ): WP_REST_Response {
+        global $wpdb;
         $user_id       = get_current_user_id();
+        $course_id     = absint( $request->get_param( 'course_id' ) );
         $assignment_id = sanitize_text_field( (string) $request->get_param( 'assignment_id' ) );
-        $submission    = sanitize_textarea_field( (string) $request->get_param( 'submission' ) );
+        $content       = sanitize_textarea_field( (string) $request->get_param( 'submission_content' ) );
+        $attach_url    = esc_url_raw( (string) $request->get_param( 'attachment_url' ) );
 
-        $submissions = (array) get_option( '_hs_assignment_submissions', array() );
-        $sub_id = 'SUB-' . time() . '-' . $user_id;
-        $submissions[ $sub_id ] = array(
-            'user_id'       => $user_id,
-            'assignment_id' => $assignment_id,
-            'content'       => $submission,
-            'status'        => 'pending_review',
-            'submitted_at'  => gmdate( 'Y-m-d H:i:s' ),
+        if ( empty( $content ) && empty( $attach_url ) ) {
+            return new WP_REST_Response( array( 'error' => 'Submission content or attachment is required.' ), 400 );
+        }
+
+        $table = $wpdb->prefix . 'hs_assignment_submissions';
+        $wpdb->insert(
+            $table,
+            array(
+                'user_id'            => $user_id,
+                'course_id'          => $course_id,
+                'assignment_id'      => $assignment_id,
+                'submission_content' => $content,
+                'attachment_url'     => $attach_url,
+                'status'             => 'submitted',
+                'submitted_at'       => gmdate( 'Y-m-d H:i:s' ),
+                'updated_at'         => gmdate( 'Y-m-d H:i:s' ),
+            ),
+            array( '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s' )
         );
-        update_option( '_hs_assignment_submissions', $submissions );
 
-        return new \\WP_REST_Response( array( 'success' => true, 'submission_id' => $sub_id, 'status' => 'pending_review' ), 201 );
+        return new WP_REST_Response( array(
+            'success'       => true,
+            'submission_id' => $wpdb->insert_id,
+            'status'        => 'submitted',
+            'message'       => 'Assignment submitted successfully for instructor evaluation.',
+        ), 200 );
     }
 
-    public static function grade_assignment( \\WP_REST_Request $request ): \\WP_REST_Response {
-        $sub_id   = sanitize_text_field( (string) $request->get_param( 'submission_id' ) );
-        $grade    = sanitize_text_field( (string) $request->get_param( 'grade' ) );
-        $feedback = sanitize_textarea_field( (string) $request->get_param( 'feedback' ) );
+    public static function sync_student_note( WP_REST_Request $request ): WP_REST_Response {
+        $user_id   = get_current_user_id();
+        $course_id = absint( $request->get_param( 'course_id' ) );
+        $lesson_id = sanitize_text_field( (string) $request->get_param( 'lesson_id' ) );
+        $notes     = sanitize_textarea_field( (string) $request->get_param( 'notes' ) );
 
-        $submissions = (array) get_option( '_hs_assignment_submissions', array() );
-        if ( isset( $submissions[ $sub_id ] ) ) {
-            $submissions[ $sub_id ]['status']   = 'graded';
-            $submissions[ $sub_id ]['grade']    = $grade;
-            $submissions[ $sub_id ]['feedback'] = $feedback;
-            $submissions[ $sub_id ]['graded_by'] = get_current_user_id();
-            $submissions[ $sub_id ]['graded_at'] = gmdate( 'Y-m-d H:i:s' );
-            update_option( '_hs_assignment_submissions', $submissions );
-        }
+        $all_notes = (array) get_user_meta( $user_id, '_hs_course_notes', true );
+        $key = "{$course_id}_{$lesson_id}";
+        $all_notes[ $key ] = array(
+            'text'       => $notes,
+            'updated_at' => gmdate( 'Y-m-d H:i:s' ),
+        );
+        update_user_meta( $user_id, '_hs_course_notes', $all_notes );
 
-        return new \\WP_REST_Response( array( 'success' => true, 'status' => 'graded' ), 200 );
+        return new WP_REST_Response( array( 'success' => true, 'saved_at' => gmdate( 'c' ) ), 200 );
     }
 
-    public static function clone_course( \\WP_REST_Request $request ): \\WP_REST_Response {
-        $source_id = absint( $request->get_param( 'course_id' ) );
-        $source    = get_post( $source_id );
-        if ( ! $source ) {
-            return new \\WP_REST_Response( array( 'error' => 'Source course not found' ), 404 );
+    public static function toggle_lesson_bookmark( WP_REST_Request $request ): WP_REST_Response {
+        $user_id   = get_current_user_id();
+        $course_id = absint( $request->get_param( 'course_id' ) );
+        $lesson_id = sanitize_text_field( (string) $request->get_param( 'lesson_id' ) );
+
+        $bookmarks = (array) get_user_meta( $user_id, '_hs_course_bookmarks', true );
+        $key = "{$course_id}_{$lesson_id}";
+        $is_bookmarked = in_array( $key, $bookmarks, true );
+
+        if ( $is_bookmarked ) {
+            $bookmarks = array_diff( $bookmarks, array( $key ) );
+        } else {
+            $bookmarks[] = $key;
+        }
+        update_user_meta( $user_id, '_hs_course_bookmarks', array_values( array_unique( $bookmarks ) ) );
+
+        return new WP_REST_Response( array( 'success' => true, 'bookmarked' => ! $is_bookmarked ), 200 );
+    }
+
+    public static function clone_course( WP_REST_Request $request ): WP_REST_Response {
+        $course_id = absint( $request->get_param( 'id' ) );
+        $original  = get_post( $course_id );
+        if ( ! $original || 'hs_course' !== $original->post_type ) {
+            return new WP_REST_Response( array( 'error' => 'Invalid course' ), 404 );
         }
 
-        $new_course_id = wp_insert_post( array(
-            'post_title'   => $source->post_title . ' (Clone)',
-            'post_content' => $source->post_content,
-            'post_status'  => 'draft',
+        $clone_id = wp_insert_post( array(
+            'post_title'   => $original->post_title . ' (Clone)',
+            'post_content' => $original->post_content,
             'post_type'    => 'hs_course',
+            'post_status'  => 'draft',
             'post_author'  => get_current_user_id(),
         ) );
 
-        if ( is_wp_error( $new_course_id ) ) {
-            return new \\WP_REST_Response( array( 'error' => 'Failed to clone' ), 500 );
+        if ( is_wp_error( $clone_id ) ) {
+            return new WP_REST_Response( array( 'error' => $clone_id->get_error_message() ), 500 );
         }
 
-        $meta = get_post_custom( $source_id );
-        foreach ( $meta as $key => $values ) {
-            foreach ( $values as $value ) {
-                add_post_meta( $new_course_id, $key, maybe_unserialize( $value ) );
-            }
-        }
-
-        return new \\WP_REST_Response( array( 'success' => true, 'cloned_id' => $new_course_id ), 201 );
+        return new WP_REST_Response( array( 'success' => true, 'clone_id' => $clone_id ), 201 );
     }
 
-    public static function get_course_health( \\WP_REST_Request $request ): \\WP_REST_Response {
-        $course_id = absint( $request->get_param( 'course_id' ) );
+    public static function audit_course_health( WP_REST_Request $request ): WP_REST_Response {
+        $course_id = absint( $request->get_param( 'id' ) );
         $course    = get_post( $course_id );
         if ( ! $course ) {
-            return new \\WP_REST_Response( array( 'error' => 'Course not found' ), 404 );
+            return new WP_REST_Response( array( 'error' => 'Course not found' ), 404 );
         }
 
-        $issues = array();
-        $total_lessons = (int) get_post_meta( $course_id, '_hs_total_lessons_count', true );
-        if ( $total_lessons <= 0 ) {
-            $issues[] = 'Course has no defined lessons count.';
-        }
-        $passing_score = (int) get_post_meta( $course_id, '_hs_passing_score', true );
-        if ( $passing_score <= 0 ) {
-            $issues[] = 'Missing required passing score.';
-        }
+        $total_lessons = (int) get_post_meta( $course_id, '_hs_curriculum_total_lessons', true ) ?: 0;
+        $quiz_bank     = (array) get_post_meta( $course_id, '_hs_curriculum_quiz_bank', true );
+        $passing_score = (int) get_post_meta( $course_id, '_hs_passing_score', true ) ?: 70;
 
-        return new \\WP_REST_Response( array(
-            'course_id' => $course_id,
-            'health'    => empty( $issues ) ? 'OPTIMAL' : 'ATTENTION_NEEDED',
-            'issues'    => $issues,
-            'checks'    => array(
-                'modules'      => 'passed',
-                'quizzes'      => 'passed',
-                'certificates' => 'configured',
-                'seo'          => 'passed',
-            ),
-        ), 200 );
-    }
-
-    public static function get_student_dashboard( \\WP_REST_Request $request ): \\WP_REST_Response {
-        global $wpdb;
-        $user_id   = get_current_user_id();
-        $enrolled  = (array) get_user_meta( $user_id, '_hs_enrolled_courses', true );
-        $xp        = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
-        $streak    = (int) get_user_meta( $user_id, '_hs_learning_streak', true ) ?: 1;
-        $cert_table = $wpdb->prefix . 'hs_certificates';
-
-        $certificates = $wpdb->get_results( $wpdb->prepare(
-            "SELECT cert_code, course_title_snapshot, level_label, issued_at, status FROM {$cert_table} WHERE recipient_user_id = %d",
-            $user_id
-        ), ARRAY_A );
-
-        return new \\WP_REST_Response( array(
-            'user_id'      => $user_id,
-            'xp'           => $xp,
-            'level'        => floor( $xp / 500 ) + 1,
-            'streak_days'  => $streak,
-            'enrolled'     => $enrolled,
-            'certificates' => $certificates ?: array(),
-            'badges'       => array( 'Ethical Hacker Foundation', 'SQL Injection Defender', 'Network Sentinel' ),
-        ), 200 );
-    }
-
-    public static function restore_backup_snapshot( \\WP_REST_Request $request ): \\WP_REST_Response {
-        global $wpdb;
-        $snapshot_id = sanitize_text_field( (string) $request->get_param( 'snapshot_id' ) );
-        $confirmed   = (bool) $request->get_param( 'confirm_integrity' );
-
-        if ( ! $confirmed || empty( $snapshot_id ) ) {
-            return new \\WP_REST_Response( array( 'error' => 'Confirmation and snapshot ID required for restore' ), 400 );
-        }
-
-        // Audit log the restore operation
-        $audit_table = $wpdb->prefix . 'hs_audit_logs';
-        $wpdb->insert(
-            $audit_table,
-            array(
-                'action_name'   => 'backup_restored',
-                'actor_user_id' => get_current_user_id(),
-                'actor_ip'      => sanitize_text_field( $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1' ),
-                'target_id'     => 0,
-                'payload_json'  => wp_json_encode( array( 'snapshot_id' => $snapshot_id, 'status' => 'success' ) ),
-                'severity'      => 'warning',
-            ),
-            array( '%s', '%d', '%s', '%d', '%s', '%s' )
-        );
-
-        return new \\WP_REST_Response( array(
-            'success'     => true,
-            'snapshot_id' => $snapshot_id,
-            'message'     => 'Verified backup snapshot restored successfully.',
-            'restored_at' => gmdate( 'c' ),
-        ), 200 );
-    }
-
-    public static function verify_certificate_endpoint( \\WP_REST_Request $request ): \\WP_REST_Response {
-        global $wpdb;
-        $cert_id = sanitize_text_field( (string) $request->get_param( 'cert_id' ) );
-        $table   = $wpdb->prefix . 'hs_certificates';
-
-        $record = $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT cert_code, recipient_display_name, course_title_snapshot, level_label, issued_at, status FROM {$table} WHERE cert_code = %s LIMIT 1",
-                $cert_id
-            ),
-            ARRAY_A
-        );
-
-        if ( ! $record ) {
-            return new \\WP_REST_Response( array(
-                'valid'     => false,
-                'cert_code' => $cert_id,
-                'status'    => 'invalid',
-                'message'   => 'Certificate ID not found in Hackers শিক্ষক Registry.',
-            ), 404 );
-        }
-
-        return new \\WP_REST_Response( array(
-            'valid'        => 'valid' === $record['status'],
-            'cert_code'    => $record['cert_code'],
-            'student_name' => $record['recipient_display_name'], // Privacy-safe public display name only
-            'course'       => $record['course_title_snapshot'], // Historical snapshot survives course edits/archive
-            'level'        => $record['level_label'],
-            'issued_at'    => $record['issued_at'],
-            'status'       => $record['status'],
-            'issuer'       => 'Hackers শিক্ষক Cybersecurity Academy (https://hackersshikkhok.com)',
-        ), 200 );
-    }
-
-    public static function validate_authorized_lab_flag( \\WP_REST_Request $request ): \\WP_REST_Response {
-        $lab_id         = absint( $request->get_param( 'lab_id' ) );
-        $submitted_flag = sanitize_text_field( (string) $request->get_param( 'flag' ) );
-        $expected_hash  = (string) get_post_meta( $lab_id, '_hs_lab_flag_sha256', true );
-
-        $is_correct = '' !== $expected_hash && hash_equals( $expected_hash, hash( 'sha256', $submitted_flag ) );
-
-        return new \\WP_REST_Response( array(
-            'lab_id'    => $lab_id,
-            'completed' => $is_correct,
-            'xp_award'  => $is_correct ? 150 : 0,
+        return new WP_REST_Response( array(
+            'course_id'     => $course_id,
+            'title'         => $course->post_title,
+            'total_lessons' => $total_lessons,
+            'quiz_count'    => count( $quiz_bank ),
+            'passing_score' => $passing_score,
+            'status'        => $course->post_status,
+            'health_grade'  => ( $total_lessons > 0 && count( $quiz_bank ) > 0 ) ? 'A+' : 'Needs Curriculum Meta',
         ), 200 );
     }
 }
@@ -3934,30 +3876,243 @@ final class CyberAcademyLmsEngine {
     updatedAt: '2026-09-30',
     content: `<?php
 /**
- * Template Name: Hackers শিক্ষক Cybersecurity Academy & LMS Hub
- * Theme Presentation Layer for Courses, Levels 0-8, Career Paths, 3-Column Course Player,
- * Visual Diagrams, Authorized Simulated Terminal Labs & Public Certificate Verification.
+ * Template Name: Hackers শিক্ষক Cybersecurity Academy & 3-Column LMS Player
+ * Theme Presentation Layer for Courses, Levels 0-8, 3-Column LMS Player & Public Certificate Verification
+ * Brand: Hackers শিক্ষক (https://hackersshikkhok.com)
  */
 
 declare(strict_types=1);
 
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
-}
-
 get_header();
+
+$current_user_id = get_current_user_id();
+$user_xp = $current_user_id ? (int) get_user_meta( $current_user_id, '_hs_learning_xp', true ) : 0;
+$wallet_data = \\HackersShikkhok\\Core\\Users\\UserEcosystem::get_wallet_summary( $current_user_id );
+$rest_nonce = wp_create_nonce( 'wp_rest' );
 ?>
-<main id="hs-cyber-academy" class="hs-academy-shell" style="background:#050811;color:#e2e8f0;padding:32px 16px;">
-    <div style="max-width:1380px;margin:0 auto;">
-        <header style="padding:28px;border-radius:18px;background:#0b1120;border:1px solid rgba(0,245,212,0.35);">
-            <span style="color:#00f5d4;font-family:monospace;font-size:12px;font-weight:700;">HACKERS শিক্ষক CYBERSECURITY ACADEMY · LEVELS 0 TO 8</span>
-            <h1 style="color:#ffffff;font-size:30px;margin:8px 0;">সাইবার সিকিউরিটি একাডেমি, প্র্যাকটিক্যাল ল্যাব ও ভেরিফায়েড সার্টিফিকেশন</h1>
-            <p style="color:#94a3b8;margin:0;">Discover → Understand Level → Study Lessons → Visual Diagrams → Safe Cyber Lab → Quiz &amp; Final Exam → Verified Certificate</p>
-        </header>
+
+<div class="hs-academy-viewport" data-hs-theme="cyber-dark">
+    <!-- Academy Master Header -->
+    <header class="hs-academy-header">
+        <div class="hs-academy-header-inner">
+            <div class="hs-academy-brand">
+                <div class="hs-academy-badge">🛡️ ACADEMY PRO</div>
+                <h1 class="hs-academy-title">Hackers শিক্ষক Cyber Academy & LMS Hub</h1>
+            </div>
+            <div class="hs-academy-stats">
+                <div class="hs-stat-chip">
+                    <span class="hs-stat-label">LEVEL XP</span>
+                    <span class="hs-stat-value" id="hs-user-xp"><?php echo esc_html( (string) $wallet_data['points'] ); ?> XP</span>
+                </div>
+                <div class="hs-stat-chip">
+                    <span class="hs-stat-label">WALLET</span>
+                    <span class="hs-stat-value">৳ <?php echo esc_html( number_format( (float) $wallet_data['balance_bdt'], 2 ) ); ?></span>
+                </div>
+                <button class="hs-btn-verify-cert" onclick="HS_ACADEMY.openCertModal()">📜 Verify Certificate</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 3-Column Production Course Player Workspace -->
+    <main class="hs-player-grid">
+        <!-- COLUMN 1: Curriculum & Module Navigation Drawer -->
+        <aside class="hs-col-curriculum" id="hs-curriculum-col">
+            <div class="hs-panel-header">
+                <h3>📚 Curriculum & Modules</h3>
+                <span class="hs-pill" id="hs-course-progress-badge">0% Complete</span>
+            </div>
+            <div class="hs-curriculum-search">
+                <input type="text" id="hs-lesson-search" placeholder="🔍 Search curriculum..." oninput="HS_ACADEMY.filterLessons(this.value)" />
+            </div>
+            <div class="hs-module-list" id="hs-module-accordion">
+                <div class="hs-module-card open">
+                    <div class="hs-module-header" onclick="HS_ACADEMY.toggleModule(this)">
+                        <span class="hs-module-num">MOD 01</span>
+                        <span class="hs-module-title">Ethical Hacking Foundations</span>
+                        <span class="hs-accordion-icon">▼</span>
+                    </div>
+                    <ul class="hs-lesson-items">
+                        <li class="hs-lesson-item active" data-lesson-id="l1_1" onclick="HS_ACADEMY.loadLesson('l1_1', 'Introduction to Zero-Trust & Threat Vectors', 'video')">
+                            <span class="hs-status-icon done">✓</span>
+                            <span class="hs-lesson-name">1.1 Zero-Trust & Threat Vectors</span>
+                            <span class="hs-lesson-duration">12m</span>
+                        </li>
+                        <li class="hs-lesson-item" data-lesson-id="l1_2" onclick="HS_ACADEMY.loadLesson('l1_2', 'Linux Security & Defensive Hardening', 'terminal')">
+                            <span class="hs-status-icon">○</span>
+                            <span class="hs-lesson-name">1.2 Linux Defensive Hardening</span>
+                            <span class="hs-lesson-duration">18m</span>
+                        </li>
+                        <li class="hs-lesson-item" data-lesson-id="l1_3" onclick="HS_ACADEMY.loadLesson('l1_3', 'Network Packet Analysis with Wireshark', 'text')">
+                            <span class="hs-status-icon">○</span>
+                            <span class="hs-lesson-name">1.3 Packet Analysis & TCP Handshake</span>
+                            <span class="hs-lesson-duration">15m</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="hs-module-card">
+                    <div class="hs-module-header" onclick="HS_ACADEMY.toggleModule(this)">
+                        <span class="hs-module-num">MOD 02</span>
+                        <span class="hs-module-title">Web Security & Cryptography</span>
+                        <span class="hs-accordion-icon">▶</span>
+                    </div>
+                    <ul class="hs-lesson-items">
+                        <li class="hs-lesson-item" data-lesson-id="l2_1" onclick="HS_ACADEMY.loadLesson('l2_1', 'OWASP Top 10: SQLi & XSS Mitigation', 'text')">
+                            <span class="hs-status-icon">○</span>
+                            <span class="hs-lesson-name">2.1 OWASP Top 10 Deep Dive</span>
+                            <span class="hs-lesson-duration">25m</span>
+                        </li>
+                        <li class="hs-lesson-item" data-lesson-id="l2_2" onclick="HS_ACADEMY.loadLesson('l2_2', 'HMAC-SHA256 & Deterministic Token Integrity', 'terminal')">
+                            <span class="hs-status-icon">○</span>
+                            <span class="hs-lesson-name">2.2 Cryptographic Integrity & HMAC</span>
+                            <span class="hs-lesson-duration">20m</span>
+                        </li>
+                        <li class="hs-lesson-item" data-lesson-id="l2_quiz" onclick="HS_ACADEMY.openQuiz('q_mod2')">
+                            <span class="hs-status-icon quiz">📝</span>
+                            <span class="hs-lesson-name">Module 2 Knowledge Quiz</span>
+                            <span class="hs-lesson-duration">5 Qs</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="hs-curriculum-footer">
+                <button class="hs-btn-exam" onclick="HS_ACADEMY.openFinalExam()">🏆 Take Final Certification Exam</button>
+            </div>
+        </aside>
+
+        <!-- COLUMN 2: Central Lesson Stage & Interactive Terminal/Player -->
+        <section class="hs-col-stage" id="hs-stage-col">
+            <div class="hs-stage-topbar">
+                <div class="hs-breadcrumb">Course: <strong>Ethical Hacking & Defensive Web Mastery</strong> / <span id="hs-current-lesson-crumb">1.1 Zero-Trust & Threat Vectors</span></div>
+                <div class="hs-lesson-actions">
+                    <button class="hs-btn-icon" id="hs-btn-bookmark" onclick="HS_ACADEMY.toggleBookmark()" title="Bookmark Lesson">🔖 Bookmark</button>
+                    <button class="hs-btn-complete" id="hs-btn-mark-complete" onclick="HS_ACADEMY.completeCurrentLesson()">Mark Complete & Next ➔</button>
+                </div>
+            </div>
+
+            <div class="hs-stage-media-card">
+                <div class="hs-stage-tabs">
+                    <button class="hs-tab-btn active" onclick="HS_ACADEMY.switchStageTab('lecture', this)">📺 Video Lecture</button>
+                    <button class="hs-tab-btn" onclick="HS_ACADEMY.switchStageTab('terminal', this)">💻 Sandboxed Terminal Lab</button>
+                    <button class="hs-tab-btn" onclick="HS_ACADEMY.switchStageTab('quiz', this)">📝 Practice Assessment</button>
+                </div>
+
+                <div class="hs-stage-content active" id="hs-stage-lecture">
+                    <div class="hs-video-container">
+                        <div class="hs-video-mockup">
+                            <div class="hs-video-play-btn">▶</div>
+                            <p>YouTube Companion Stream: <strong>@HackersShikkhok</strong></p>
+                            <small>Hardware-isolated streaming with 1080p 60fps technical walkthrough</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hs-stage-content" id="hs-stage-terminal" style="display:none;">
+                    <div class="hs-terminal-window">
+                        <div class="hs-term-header">
+                            <span class="hs-term-dot red"></span>
+                            <span class="hs-term-dot yellow"></span>
+                            <span class="hs-term-dot green"></span>
+                            <span class="hs-term-title">hs-lab-session@hackersshikkhok:~ (Isolated Sandbox)</span>
+                        </div>
+                        <div class="hs-term-body" id="hs-term-output">
+                            <p class="hs-term-line">Welcome to Hackers শিক্ষক Defensive Security Interactive Sandbox v4.1.0.</p>
+                            <p class="hs-term-line">Type 'help', 'status', 'scan', 'verify-hmac', or 'clear' to execute authorized lab commands.</p>
+                            <div class="hs-term-prompt-line">
+                                <span class="hs-term-prompt">scholar@hs-academy:~$</span>
+                                <input type="text" id="hs-term-input" onkeydown="HS_ACADEMY.handleTerminalKey(event)" autofocus />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hs-stage-content" id="hs-stage-quiz" style="display:none;">
+                    <div class="hs-quiz-card" id="hs-quiz-container">
+                        <h3>Module Assessment Quiz</h3>
+                        <p>Complete this 5-question technical quiz to test defensive security principles. Answers are server-side evaluated.</p>
+                        <form id="hs-quiz-form" onsubmit="HS_ACADEMY.submitQuizForm(event)">
+                            <div class="hs-quiz-q">
+                                <p><strong>1. Which comparison method avoids timing attack vulnerabilities in token validation?</strong></p>
+                                <label><input type="radio" name="q1" value="0" /> $a == $b (Standard Equality)</label><br />
+                                <label><input type="radio" name="q1" value="1" /> hash_equals($a, $b) (Constant-Time Comparison)</label><br />
+                                <label><input type="radio" name="q1" value="2" /> strcmp($a, $b)</label><br />
+                                <label><input type="radio" name="q1" value="3" /> md5($a) == md5($b)</label>
+                            </div>
+                            <div class="hs-quiz-q">
+                                <p><strong>2. What is the primary function of HMAC-SHA256 in certificate issuance?</strong></p>
+                                <label><input type="radio" name="q2" value="0" /> Encrypting database passwords</label><br />
+                                <label><input type="radio" name="q2" value="1" /> Compressing image files</label><br />
+                                <label><input type="radio" name="q2" value="2" /> Guaranteeing data authenticity & tamper-proof integrity</label><br />
+                                <label><input type="radio" name="q2" value="3" /> Client-side localStorage backup</label>
+                            </div>
+                            <button type="submit" class="hs-btn-submit-quiz">Submit Assessment for Authoritative Grading ➔</button>
+                        </form>
+                        <div id="hs-quiz-result" class="hs-quiz-result" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <article class="hs-lesson-body">
+                <h2>Lesson Notes & Implementation Guide</h2>
+                <p>Zero-Trust Architecture assumes that threat actors may already exist within the network perimeter. All requests must be authenticated, authorized, and cryptographically verified before access is granted.</p>
+                <div class="hs-code-snippet">
+                    <pre><code>// Defensive validation & HMAC calculation
+function generateSecurityProof(string $userId, string $certCode, string $secret): string {
+    return hash_hmac('sha256', "{$userId}|{$certCode}", $secret);
+}</code></pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- COLUMN 3: Student Live Console, Notes & Certificate Hub -->
+        <aside class="hs-col-console" id="hs-console-col">
+            <div class="hs-panel-header">
+                <h3>📝 Live Scholar Notebook</h3>
+                <span class="hs-pill-saved" id="hs-note-save-status">Synced to Cloud</span>
+            </div>
+            <div class="hs-notepad-container">
+                <textarea id="hs-student-notes" placeholder="Take personal markdown study notes for this lesson... Auto-saves to your account." oninput="HS_ACADEMY.autoSaveNotes()"></textarea>
+            </div>
+
+            <div class="hs-cert-card" id="hs-cert-snapshot-card">
+                <div class="hs-cert-badge">🏅 VERIFIED CREDENTIAL</div>
+                <h4>Ethical Security Scholar</h4>
+                <p>Complete 100% of curriculum and achieve >= 75% on the Final Exam to unlock your deterministic HMAC certificate.</p>
+                <div class="hs-cert-progress-bar">
+                    <div class="hs-progress-fill" id="hs-console-progress-fill" style="width: 35%;"></div>
+                </div>
+                <button class="hs-btn-download-cert" id="hs-btn-get-cert" onclick="HS_ACADEMY.generateCertNow()">🎓 Generate Official Certificate</button>
+            </div>
+
+            <div class="hs-resources-card">
+                <h4>📦 Lesson Artifacts</h4>
+                <ul class="hs-resource-list">
+                    <li><a href="#" download>📄 Threat-Matrix-CheatSheet.pdf</a></li>
+                    <li><a href="#" download>💻 firewall-rules-starter.sh</a></li>
+                    <li><a href="#" download>🛡️ hmac-verifier.py</a></li>
+                </ul>
+            </div>
+        </aside>
+    </main>
+
+    <div class="hs-modal" id="hs-cert-modal" style="display:none;">
+        <div class="hs-modal-backdrop" onclick="HS_ACADEMY.closeCertModal()"></div>
+        <div class="hs-modal-dialog">
+            <div class="hs-modal-header">
+                <h3>📜 Verify Certificate Authenticity</h3>
+                <button class="hs-modal-close" onclick="HS_ACADEMY.closeCertModal()">✕</button>
+            </div>
+            <div class="hs-modal-body">
+                <p>Enter the Certificate ID to verify cryptographic proof against the Hackers শিক্ষক Ledger:</p>
+                <div class="hs-modal-input-row">
+                    <input type="text" id="hs-modal-cert-id" placeholder="e.g. HS-CERT-A1B2C3D4E5" />
+                    <button class="hs-btn-search-cert" onclick="HS_ACADEMY.performCertLookup()">Verify Signature</button>
+                </div>
+                <div id="hs-cert-lookup-result" style="display:none;" class="hs-cert-result-card"></div>
+            </div>
+        </div>
     </div>
-</main>
-<?php
-get_footer();
+</div>
 `
   },
   {
