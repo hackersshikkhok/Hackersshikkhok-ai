@@ -3247,41 +3247,105 @@ final class CyberAcademyLmsEngine {
         $user_id   = get_current_user_id();
         $course_id = absint( $request->get_param( 'course_id' ) );
         $quiz_id   = sanitize_text_field( (string) $request->get_param( 'quiz_id' ) );
-        $answers   = (array) $request->get_param( 'answers' );
+        $submitted = (array) $request->get_param( 'answers' ); // Array of { question_id, selected_option }
 
-        // Calculate score authoritatively
-        $correct_count = count( array_filter( $answers, static fn( $ans ) => ! empty( $ans['is_correct'] ) ) );
-        $total_count   = max( 1, count( $answers ) );
-        $score_percent = (int) round( ( $correct_count / $total_count ) * 100 );
-        $passed        = $score_percent >= 70;
+        // Server-Side Authoritative Grading: Never trust client is_correct flags
+        // Fetch official question bank from secure postmeta or default curriculum bank
+        $question_bank = (array) get_post_meta( $course_id, '_hs_curriculum_quiz_bank', true );
+        if ( empty( $question_bank ) ) {
+            // Default curriculum question bank for standard cybersecurity assessments
+            $question_bank = array(
+                'q1' => array( 'correct_idx' => 1, 'marks' => 1 ),
+                'q2' => array( 'correct_idx' => 2, 'marks' => 1 ),
+                'q3' => array( 'correct_idx' => 0, 'marks' => 1 ),
+                'q4' => array( 'correct_idx' => 3, 'marks' => 1 ),
+                'q5' => array( 'correct_idx' => 1, 'marks' => 1 ),
+            );
+        }
+
+        $total_questions = max( 1, count( $question_bank ) );
+        $correct_count   = 0;
+
+        foreach ( $submitted as $ans ) {
+            $q_id = sanitize_key( (string) ( $ans['question_id'] ?? '' ) );
+            $selected = isset( $ans['selected_option'] ) ? (int) $ans['selected_option'] : -1;
+            if ( isset( $question_bank[ $q_id ] ) && $question_bank[ $q_id ]['correct_idx'] === $selected ) {
+                $correct_count++;
+            }
+        }
+
+        $score_percent = (int) round( ( $correct_count / $total_questions ) * 100 );
+        $passing_mark  = (int) get_post_meta( $course_id, '_hs_passing_score', true ) ?: 70;
+        $passed        = $score_percent >= $passing_mark;
 
         $xp = $passed ? 50 : 10;
         $current_xp = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
         update_user_meta( $user_id, '_hs_learning_xp', $current_xp + $xp );
+
+        // Store attempt record in user attempts history
+        $attempts = (array) get_user_meta( $user_id, "_hs_quiz_attempts_{$course_id}_{$quiz_id}", true );
+        $attempts[] = array(
+            'attempted_at'  => gmdate( 'Y-m-d H:i:s' ),
+            'score_percent' => $score_percent,
+            'passed'        => $passed,
+        );
+        update_user_meta( $user_id, "_hs_quiz_attempts_{$course_id}_{$quiz_id}", $attempts );
 
         return new \\WP_REST_Response( array(
             'success'       => true,
             'passed'        => $passed,
             'score_percent' => $score_percent,
             'xp_awarded'    => $xp,
+            'correct_count' => $correct_count,
+            'total_count'   => $total_questions,
         ), 200 );
     }
 
     public static function submit_exam_attempt( \\WP_REST_Request $request ): \\WP_REST_Response {
         $user_id   = get_current_user_id();
         $course_id = absint( $request->get_param( 'course_id' ) );
-        $answers   = (array) $request->get_param( 'answers' );
+        $submitted = (array) $request->get_param( 'answers' );
 
-        $score = count( array_filter( $answers, static fn( $ans ) => ! empty( $ans['correct'] ) ) );
-        $total = max( 1, count( $answers ) );
-        $percent = (int) round( ( $score / $total ) * 100 );
+        // Server-side authoritative final examination grading
+        $exam_bank = (array) get_post_meta( $course_id, '_hs_curriculum_exam_bank', true );
+        if ( empty( $exam_bank ) ) {
+            $exam_bank = array(
+                'ex1' => array( 'correct_idx' => 2 ),
+                'ex2' => array( 'correct_idx' => 0 ),
+                'ex3' => array( 'correct_idx' => 1 ),
+                'ex4' => array( 'correct_idx' => 3 ),
+                'ex5' => array( 'correct_idx' => 2 ),
+                'ex6' => array( 'correct_idx' => 1 ),
+                'ex7' => array( 'correct_idx' => 0 ),
+                'ex8' => array( 'correct_idx' => 3 ),
+            );
+        }
+
+        $total_questions = max( 1, count( $exam_bank ) );
+        $correct_count   = 0;
+
+        foreach ( $submitted as $ans ) {
+            $q_id = sanitize_key( (string) ( $ans['question_id'] ?? '' ) );
+            $selected = isset( $ans['selected_option'] ) ? (int) $ans['selected_option'] : -1;
+            if ( isset( $exam_bank[ $q_id ] ) && $exam_bank[ $q_id ]['correct_idx'] === $selected ) {
+                $correct_count++;
+            }
+        }
+
+        $percent = (int) round( ( $correct_count / $total_questions ) * 100 );
         $passed = $percent >= 75;
+
+        $xp = $passed ? 200 : 25;
+        $current_xp = (int) get_user_meta( $user_id, '_hs_learning_xp', true );
+        update_user_meta( $user_id, '_hs_learning_xp', $current_xp + $xp );
 
         return new \\WP_REST_Response( array(
             'success'       => true,
             'passed'        => $passed,
             'score_percent' => $percent,
-            'xp_awarded'    => $passed ? 200 : 25,
+            'xp_awarded'    => $xp,
+            'correct_count' => $correct_count,
+            'total_count'   => $total_questions,
         ), 200 );
     }
 
