@@ -20,6 +20,7 @@ use HackersShikkhok\Core\Email\NativeBrandedEmailEngine;
 use HackersShikkhok\Core\Auth\NativeBrandedAuthEngine;
 use HackersShikkhok\Core\Editor\NativeClassicEditorEngine;
 use HackersShikkhok\Core\Academy\CyberAcademyLmsEngine;
+use HackersShikkhok\Core\Academy\CourseContentImporter;
 use HackersShikkhok\Core\Labs\HardwareAndIotEngine;
 use HackersShikkhok\Core\Labs\EngineeringAndCncLab;
 use HackersShikkhok\Core\Community\GamificationAndChallenges;
@@ -57,6 +58,7 @@ final class Plugin {
         NativeBrandedAuthEngine::register();
         NativeClassicEditorEngine::register();
         CyberAcademyLmsEngine::register();
+        CourseContentImporter::register();
         HardwareAndIotEngine::register();
         EngineeringAndCncLab::register();
         GamificationAndChallenges::register();

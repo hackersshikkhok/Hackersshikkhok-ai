@@ -1,0 +1,802 @@
+[
+  {
+    "id": "cyber-01-foundations",
+    "titleEn": "Cybersecurity Fundamentals & Threat Landscapes",
+    "titleBn": "সাইবার সিকিউরিটি ফান্ডামেন্টালস (Cybersecurity Fundamentals)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-02-infosec-foundations",
+    "titleEn": "Foundations of Information Security & Governance",
+    "titleBn": "ফাউন্ডেশনস অফ ইনফরমেশন সিকিউরিটি (Foundations of Information Security)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-03-ethical-hacking-beginners",
+    "titleEn": "Ethical Hacking for Beginners (Authorized Hands-On)",
+    "titleBn": "ইথিক্যাল হ্যাকিং ফর বিগিনার্স (Ethical Hacking for Beginners)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-04-ethical-hacking-intermediate",
+    "titleEn": "Intermediate Ethical Hacking & Vulnerability Exploitation",
+    "titleBn": "ইথিক্যাল হ্যাকিং ইন্টারমিডিয়েট (Ethical Hacking Intermediate)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-05-advanced-ethical-hacking",
+    "titleEn": "Advanced Penetration Testing & Evasion Techniques",
+    "titleBn": "অ্যাডভান্সড ইথিক্যাল হ্যাকিং (Advanced Ethical Hacking)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-06-white-hat-career",
+    "titleEn": "Professional White-Hat Career Roadmap & Interview Prep",
+    "titleBn": "হোয়াইট-হ্যাট হ্যাকিং ক্যারিয়ার পাথ (White-Hat Hacking Career Path)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-07-linux-for-hackers",
+    "titleEn": "Linux Fundamentals for Hackers & Security Researchers",
+    "titleBn": "লিনাক্স ফান্ডামেন্টালস ফর হ্যাকার্স (Linux Fundamentals for Hackers)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-08-kali-linux-essentials",
+    "titleEn": "Kali Linux Mastery & Defensive Tooling Setup",
+    "titleBn": "কালি লিনাক্স এসেনশিয়ালস (Kali Linux Essentials)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-09-network-hacking-labs",
+    "titleEn": "Network Protocol Security Testing & Defense in Authorized Labs",
+    "titleBn": "নেটওয়ার্ক সিকিউরিটি ও ল্যাব অডিট (Network Testing in Authorized Labs)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-10-web-app-security",
+    "titleEn": "Web Application Security & Defensive Hardening",
+    "titleBn": "ওয়েব অ্যাপ্লিকেশন সিকিউরিটি (Web Application Security)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-11-owasp-top-10",
+    "titleEn": "OWASP Top 10: Vulnerabilities & Source Code Remediation",
+    "titleBn": "ওভাস্প টপ ১০ মাস্টারক্লাস (OWASP Top 10 Masterclass)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-12-penetration-testing-fund",
+    "titleEn": "Penetration Testing Methodology & Execution Standards",
+    "titleBn": "পেনিট্রেশন টেস্টিং ফান্ডামেন্টালস (Penetration Testing Fundamentals)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-13-vulnerability-assessment",
+    "titleEn": "Vulnerability Assessment, CVSS Scoring & Remediation Planning",
+    "titleBn": "ভালনারেবিলিটি অ্যাসেসমেন্ট (Vulnerability Assessment)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-14-bug-bounty-fundamentals",
+    "titleEn": "Bug Bounty Hunting: Recon, Proof-of-Concept & Ethical Reporting",
+    "titleBn": "বাগ বাউন্টি হান্টিং ফান্ডামেন্টালস (Bug Bounty Hunting Fundamentals)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-15-api-security-testing",
+    "titleEn": "REST & GraphQL API Security Testing (OWASP API Top 10)",
+    "titleBn": "এপিআই সিকিউরিটি টেস্টিং (API Security Testing)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-16-wireless-network-security",
+    "titleEn": "Wi-Fi & Wireless Security Protocols (WPA2/WPA3 Auditing)",
+    "titleBn": "ওয়্যারলেস নেটওয়ার্ক সিকিউরিটি (Wireless Network Security)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-17-password-security-auditing",
+    "titleEn": "Password Hashing, Cracking Resistance & Auditing in Enterprise",
+    "titleBn": "পাসওয়ার্ড সিকিউরিটি অ্যান্ড অডিটিং (Password Security and Auditing)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-18-cryptography-fundamentals",
+    "titleEn": "Applied Cryptography: Symmetric, Asymmetric & PKI Infrastructure",
+    "titleBn": "ক্রিপ্টোগ্রাফি ফান্ডামেন্টালস (Cryptography Fundamentals)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-19-digital-forensics",
+    "titleEn": "Digital Forensics & Incident Evidence Acquisition",
+    "titleBn": "ডিজিটাল ফরেনসিক্স (Digital Forensics)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-20-incident-response",
+    "titleEn": "Enterprise Incident Response & Disaster Containment Playbooks",
+    "titleBn": "ইনসিডেন্ট রেসপন্স (Incident Response)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-21-malware-analysis-fund",
+    "titleEn": "Static & Dynamic Malware Analysis in Isolated Sandboxes",
+    "titleBn": "ম্যালওয়্যার অ্যানালাইসিস ফান্ডামেন্টালস (Malware Analysis Fundamentals)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-22-soc-analyst",
+    "titleEn": "SOC Analyst Master Training (Tier 1 & Tier 2 Operations)",
+    "titleBn": "সিকিউরিটি অপারেশনস সেন্টার (SOC) অ্যানালিস্ট (SOC Analyst Tier 1/2)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-23-siem-log-analysis",
+    "titleEn": "SIEM Architecture: Splunk, Elastic Security & Syslog Correlation",
+    "titleBn": "SIEM টুলস অ্যান্ড লগ অ্যানালাইসিস (SIEM Tools and Log Analysis)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-24-threat-intel-mitre",
+    "titleEn": "Cyber Threat Intelligence (CTI) & MITRE ATT&CK Framework Mapping",
+    "titleBn": "থ্রেট ইন্টেলিজেন্স ও MITRE ATT&CK (Threat Intelligence & MITRE ATT&CK)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-25-cloud-security",
+    "titleEn": "AWS & Cloud Security Architecture, IAM & Zero-Trust",
+    "titleBn": "ক্লাউড সিকিউরিটি ফান্ডামেন্টালস (Cloud Security Fundamentals)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-26-mobile-app-security",
+    "titleEn": "Android & iOS App Security Auditing (OWASP MASVS)",
+    "titleBn": "মোবাইল অ্যাপ্লিকেশন সিকিউরিটি (Mobile Application Security)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-27-secure-code-auditing",
+    "titleEn": "Static Code Analysis (SAST) & Secure Code Review in PHP/JS",
+    "titleBn": "সিকিউর কোড অডিটিং (Secure Code Auditing)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-28-red-team-blue-team",
+    "titleEn": "Red Team Offense vs. Blue Team Defense (Purple Team Synergy)",
+    "titleBn": "রেড টিম ও ব্লু টিম ফান্ডামেন্টালস (Red Team & Blue Team Fundamentals)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-29-ctf-training",
+    "titleEn": "Jeopardy & Attack-Defense CTF Problem Solving Masterclass",
+    "titleBn": "ক্যাপচার দ্য ফ্ল্যাগ (CTF) ট্রেনিং (Capture the Flag Training)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "cyber-30-security-cert-prep",
+    "titleEn": "CompTIA Security+, CEH & eJPT Exam Strategy & Mock Exams",
+    "titleBn": "সিকিউরিটি সার্টিফিকেশন প্রিপারেশন (Security Certifications Preparation)",
+    "categoryId": "cybersecurity",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "webdev-01-html-css-mastery",
+    "titleEn": "HTML5, CSS3, Flexbox & CSS Grid Responsive Web Design",
+    "titleBn": "HTML5 ও CSS3 আধুনিক ওয়েব ডিজাইন (Modern Responsive Design)",
+    "categoryId": "webdev",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "webdev-02-javascript-es6",
+    "titleEn": "Modern JavaScript ES6+, Asynchronous JS & DOM Mastery",
+    "titleBn": "মডার্ন জাভাস্ক্রিপ্ট (Modern JavaScript ES6+ & DOM)",
+    "categoryId": "webdev",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "webdev-03-react-tailwind",
+    "titleEn": "React 19 Hooks, State Management & Tailwind CSS Pro UIs",
+    "titleBn": "রিঅ্যাক্ট ও টেইলউইন্ড সিএসএস (React & Tailwind CSS Masterclass)",
+    "categoryId": "webdev",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "webdev-04-nodejs-express",
+    "titleEn": "Backend Development with Node.js, Express & REST APIs",
+    "titleBn": "নোড.জেএস ও এক্সপ্রেস ব্যাকএন্ড (Node.js & Express.js Backend)",
+    "categoryId": "webdev",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "webdev-05-python-fullstack",
+    "titleEn": "Python 3 Programming: OOP, Scripts, Web Automation & APIs",
+    "titleBn": "পাইথন প্রোগ্রামিং ফর ডেভেলপার্স (Python Programming Essentials)",
+    "categoryId": "webdev",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "webdev-06-php-modern-oop",
+    "titleEn": "Modern PHP 8.2+: Strict Types, OOP, Composer & Security",
+    "titleBn": "মডার্ন পিএইচপি ৮.২+ ও ওওপি (Modern PHP 8.2+ OOP Architecture)",
+    "categoryId": "webdev",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "webdev-07-database-sql-mysql",
+    "titleEn": "Relational Database Engineering: SQL, Normalization & Indexing",
+    "titleBn": "ডাটাবেস ইঞ্জিনিয়ারিং ও এসকিউএল (SQL, MySQL & PostgreSQL)",
+    "categoryId": "webdev",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "webdev-08-git-github",
+    "titleEn": "Git & GitHub Collaboration, Branching & Open-Source Workflows",
+    "titleBn": "গিট ও গিটহাব ভার্সন কন্ট্রোল (Git & GitHub for Developers)",
+    "categoryId": "webdev",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "webdev-09-docker-devops-basics",
+    "titleEn": "Docker Containerization, Docker Compose & Microservices",
+    "titleBn": "ডকার ও ডেভঅপস ফান্ডামেন্টালস (Docker & DevOps Fundamentals)",
+    "categoryId": "webdev",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "webdev-10-fullstack-capstone",
+    "titleEn": "Full-Stack Web Engineering Capstone Project from Scratch",
+    "titleBn": "ফুল-স্ট্যাক ওয়েব ডেভেলপার ক্যাপস্টোন (Full-Stack Web Bootcamp)",
+    "categoryId": "webdev",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "wp-01-theme-dev-scratch",
+    "titleEn": "WordPress Theme Development: Template Hierarchy & Modern CSS",
+    "titleBn": "ওয়ার্ডপ্রেস কাস্টম থিম ডেভেলপমেন্ট (Theme Development from Scratch)",
+    "categoryId": "wordpress",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "wp-02-core-plugin-dev",
+    "titleEn": "Enterprise WordPress Plugin Development: OOP, CPTs & Hooks",
+    "titleBn": "ওয়ার্ডপ্রেস কোর প্লাগইন ডেভেলপমেন্ট (Core Plugin Architecture)",
+    "categoryId": "wordpress",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "wp-03-cpt-taxonomies-meta",
+    "titleEn": "Advanced Custom Post Types, Taxonomies & Custom Meta Fields",
+    "titleBn": "কাস্টম পোস্ট টাইপ ও মেটা বক্স ইঞ্জিনিয়ারিং (CPTs, Taxonomies & Meta)",
+    "categoryId": "wordpress",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "wp-04-woocommerce-customization",
+    "titleEn": "WooCommerce Custom Development, Hooks & bKash/Nagad Gateways",
+    "titleBn": "উকমার্স ডেভেলপমেন্ট ও পেমেন্ট গেটওয়ে (WooCommerce & Payment Gateways)",
+    "categoryId": "wordpress",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "wp-05-security-malware-removal",
+    "titleEn": "WordPress Security Hardening, Malware Removal & Live Site Recovery",
+    "titleBn": "ওয়ার্ডপ্রেস সিকিউরিটি ও ম্যালওয়্যার রিমুভাল (Security & Malware Cleanup)",
+    "categoryId": "wordpress",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "wp-06-headless-wp-rest",
+    "titleEn": "Headless WordPress with Next.js/React & Custom REST Endpoints",
+    "titleBn": "হেডলেস ওয়ার্ডপ্রেস ও রেস্ট এপিআই (Headless WP & Next.js/React)",
+    "categoryId": "wordpress",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "wp-07-speed-core-web-vitals",
+    "titleEn": "WordPress Performance Tuning: Caching, Assets & Core Web Vitals",
+    "titleBn": "স্পিড অপটিমাইজেশন ও কোর ওয়েব ভাইটালস (Speed & Core Web Vitals 90+)",
+    "categoryId": "wordpress",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "wp-08-action-scheduler-cron",
+    "titleEn": "WordPress Action Scheduler, Asynchronous Cron & High-Volume Queues",
+    "titleBn": "অ্যাকশন সিডিউলার ও ব্যাকগ্রাউন্ড জবস (Action Scheduler & Background Jobs)",
+    "categoryId": "wordpress",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "ai-01-prompt-engineering",
+    "titleEn": "Prompt Engineering: Few-Shot, Chain-of-Thought & System Directives",
+    "titleBn": "প্রম্পট ইঞ্জিনিয়ারিং মাস্টারক্লাস (Prompt Engineering Masterclass)",
+    "categoryId": "ai_data",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "ai-02-gemini-chatgpt-developers",
+    "titleEn": "Integrating Gemini & OpenAI APIs in Full-Stack Web Applications",
+    "titleBn": "Gemini ও ChatGPT এপিআই ইন্টিগ্রেশন (LLM APIs for Developers)",
+    "categoryId": "ai_data",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "ai-03-python-for-ai-data",
+    "titleEn": "Python Data Science: NumPy, Pandas & Matplotlib Fundamentals",
+    "titleBn": "পাইথন ফর ডেটা সায়েন্স ও এআই (Python for Data Science & AI)",
+    "categoryId": "ai_data",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "ai-04-machine-learning-fund",
+    "titleEn": "Supervised & Unsupervised Machine Learning with Scikit-Learn",
+    "titleBn": "মেশিন লার্নিং ফান্ডামেন্টালস (Machine Learning Fundamentals)",
+    "categoryId": "ai_data",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "ai-05-building-ai-webapps",
+    "titleEn": "End-to-End AI Web Apps: Next.js, LangChain & Vector Embeddings",
+    "titleBn": "এআই-পাওয়ার্ড ওয়েব অ্যাপ্লিকেশন নির্মাণ (Building AI Web Apps)",
+    "categoryId": "ai_data",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "ai-06-autonomous-agents-workflow",
+    "titleEn": "Autonomous AI Agents, Tool Calling & Workflow Automation",
+    "titleBn": "এআই ওয়ার্কফ্লো ও অটোনোমাস এজেন্ট (AI Agents & Automation)",
+    "categoryId": "ai_data",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "ai-07-computer-vision-nlp",
+    "titleEn": "Computer Vision with OpenCV & Natural Language Processing",
+    "titleBn": "কম্পিউটার ভিশন ও এনএলপি বেসিকস (Computer Vision & NLP Basics)",
+    "categoryId": "ai_data",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "ai-08-responsible-ethical-ai",
+    "titleEn": "AI Safety, Alignment, Privacy & Anti-Bias Frameworks",
+    "titleBn": "এথিক্যাল এআই ও রেসপন্সিবল টেক (Ethical AI & Data Privacy)",
+    "categoryId": "ai_data",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "free-01-upwork-fiverr-blueprint",
+    "titleEn": "Top-Rated Freelancer Blueprint: Upwork & Fiverr Profiles that Win",
+    "titleBn": "আপওয়ার্ক ও ফাইভার মাস্টার ব্লুপ্রিন্ট (Upwork & Fiverr Master Blueprint)",
+    "categoryId": "freelancing",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "free-02-proposal-writing-communication",
+    "titleEn": "Winning Client Proposals, Video Pitches & English Communication",
+    "titleBn": "ক্লায়েন্ট কমিউনিকেশন ও প্রপোজাল রাইটিং (Proposals & Communication)",
+    "categoryId": "freelancing",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "free-03-portfolio-branding",
+    "titleEn": "Building High-Converting Tech Portfolios & GitHub Authority",
+    "titleBn": "টেক পোর্টফোলিও ও পার্সোনাল ব্র্যান্ডিং (Portfolio & Personal Branding)",
+    "categoryId": "freelancing",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "free-04-payments-invoicing",
+    "titleEn": "Payoneer, Wise, Wire Transfers, Invoicing & Legal Contracts",
+    "titleBn": "ইন্টারন্যাশনাল পেমেন্টস ও ফ্রিল্যান্স কন্ট্রাক্ট (Cross-Border Payments)",
+    "categoryId": "freelancing",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "free-05-remote-job-hunting",
+    "titleEn": "Landing Global Remote Software & Security Jobs in US/EU",
+    "titleBn": "রিমোট জব হান্টিং ও ইন্টারভিউ প্রস্তুতি (Remote Job Hunting Guide)",
+    "categoryId": "freelancing",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "free-06-building-tech-agency",
+    "titleEn": "From Solo Freelancer to Digital Tech Agency: Team & SOPs",
+    "titleBn": "টেক এজেন্সি বিল্ডিং ও স্কেলিং (Building & Scaling a Tech Agency)",
+    "categoryId": "freelancing",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "des-01-figma-uiux-design",
+    "titleEn": "Figma UI/UX: Design Systems, Auto-Layout & Interactive Prototypes",
+    "titleBn": "ফিগমা ইউআই/ইউএক্স ডিজাইন (Figma UI/UX & Prototyping Masterclass)",
+    "categoryId": "design_media",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "des-02-photoshop-illustrator",
+    "titleEn": "Graphic Design Mastery: Photoshop Manipulation & Illustrator Vectors",
+    "titleBn": "ফটোশপ ও ইলাস্ট্রেটর এসেনশিয়ালস (Photoshop & Illustrator Essentials)",
+    "categoryId": "design_media",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "des-03-video-editing-premiere",
+    "titleEn": "Video Editing Masterclass: Premiere Pro, Storytelling & Audio Mix",
+    "titleBn": "প্রিমিয়ার প্রো ইউটিউব ভিডিও এডিটিং (Video Editing for YouTube)",
+    "categoryId": "design_media",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "des-04-after-effects-motion",
+    "titleEn": "After Effects: Kinetic Typography, Logo Animation & Cyber VFX",
+    "titleBn": "মোশন গ্রাফিক্স ও আফটার এফেক্টস (Motion Graphics in After Effects)",
+    "categoryId": "design_media",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "des-05-cyber-neon-aesthetics",
+    "titleEn": "Cyberpunk & Tech Visual Aesthetics: Palettes, Gradients & Glows",
+    "titleBn": "সাইবার নিয়ন ও টেক ব্র্যান্ড আইডেন্টিটি (Cyber Aesthetics & Branding)",
+    "categoryId": "design_media",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "des-06-conversion-landing-page",
+    "titleEn": "High-Converting Landing Page UI/UX, Copywriting & Analytics",
+    "titleBn": "কনভার্সন-ড্রিভেন ল্যান্ডিং পেজ ডিজাইন (Conversion Landing Pages)",
+    "categoryId": "design_media",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "hard-01-pc-hardware-diagnostics",
+    "titleEn": "PC Assembly, Hardware Troubleshooting, POST Codes & Thermal Care",
+    "titleBn": "পিসি বিল্ডিং ও হার্ডওয়্যার ডায়াগনস্টিকস (PC Building & Diagnostics)",
+    "categoryId": "hardware_iot",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "hard-02-ccna-networking-essentials",
+    "titleEn": "Computer Networking: OSI 7 Layers, Subnetting, VLANs & Routing",
+    "titleBn": "নেটওয়ার্কিং এসেনশিয়ালস ও সিসিএনএ (CCNA & Computer Networking)",
+    "categoryId": "hardware_iot",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "hard-03-mikrotik-router-config",
+    "titleEn": "MikroTik RouterOS: Bandwidth Management, Bandwidth Queues & Firewall",
+    "titleBn": "মিক্রোটিক রাউটারওএস কনফিগারেশন (MikroTik RouterOS Mastery)",
+    "categoryId": "hardware_iot",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "hard-04-iot-arduino-raspberry",
+    "titleEn": "Internet of Things (IoT): Arduino, Raspberry Pi, Sensors & MQTT",
+    "titleBn": "আইওটি প্রজেক্ট: আর্দুইনো ও রাস্পবেরি পাই (Arduino & Raspberry Pi IoT)",
+    "categoryId": "hardware_iot",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "hard-05-homelab-server-setup",
+    "titleEn": "Building a Cyber Home Lab: Proxmox VE, TrueNAS & Self-Hosting",
+    "titleBn": "হোম ল্যাব ও সার্ভার সেটআপ (Home Lab: Proxmox & TrueNAS)",
+    "categoryId": "hardware_iot",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "hard-06-embedded-electronics",
+    "titleEn": "Practical Electronics: Circuit Schematics, Multimeter & PCB Design",
+    "titleBn": "সার্কিট ডিজাইন ও ইলেকট্রনিক্স (Circuit Design & PCB Basics)",
+    "categoryId": "hardware_iot",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "mkt-01-technical-seo-blueprint",
+    "titleEn": "Technical SEO: Crawlability, Schema Markup, Core Web Vitals & Rank",
+    "titleBn": "টেকনিক্যাল এসইও ও অর্গানিক ট্রাফিক (Technical SEO Masterclass)",
+    "categoryId": "marketing_business",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "mkt-02-youtube-channel-growth",
+    "titleEn": "YouTube Channel Growth: Algorithm Secrets, Thumbnails & Monetization",
+    "titleBn": "ইউটিউব চ্যানেল গ্রোথ ও মনিটাইজেশন (YouTube Channel Mastery)",
+    "categoryId": "marketing_business",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "mkt-03-meta-google-ads",
+    "titleEn": "PPC & Social Ads: Google Search Ads, Meta Pixel & High ROI Campaigns",
+    "titleBn": "মেটা ও গুগল পারফরম্যান্স অ্যাডস (Meta & Google Performance Ads)",
+    "categoryId": "marketing_business",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "mkt-04-affiliate-marketing-tech",
+    "titleEn": "High-Ticket Tech & SaaS Affiliate Marketing Systems",
+    "titleBn": "টেক ও সাস অ্যাফিলিয়েট মার্কেটিং (Tech & SaaS Affiliate Systems)",
+    "categoryId": "marketing_business",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "mkt-05-ecommerce-business-scaling",
+    "titleEn": "Scaling E-Commerce in Bangladesh & Worldwide: Logistics & Ads",
+    "titleBn": "ই-কমার্স বিজনেস ও স্টোর স্কেলিং (E-commerce Store Scaling)",
+    "categoryId": "marketing_business",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  },
+  {
+    "id": "mkt-06-tech-startup-fundamentals",
+    "titleEn": "Bootstrapping a Tech Startup: MVP, Validation & Pitch Decks",
+    "titleBn": "টেক স্টার্টআপ ফান্ডামেন্টালস ও পিচিং (Tech Startup & Funding)",
+    "categoryId": "marketing_business",
+    "level": 1,
+    "durationWeeks": 4,
+    "skills": [],
+    "descBn": ""
+  }
+]
