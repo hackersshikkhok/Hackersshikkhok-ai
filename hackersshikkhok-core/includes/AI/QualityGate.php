@@ -75,7 +75,7 @@ final class QualityGate {
             'zero-trust', 'firewall', 'encryption', 'owasp', 'xss', 'sql injection',
             'csrf', 'authentication', 'authorization', 'vulnerability', 'penetration testing',
             'defense-in-depth', 'sanitization', 'hardening', 'endpoint', 'ctf', 'linux',
-            'cryptography', 'incident response', 'privilege escalation', 'hash', 'hmac'
+            'cryptography', 'incident response', 'privilege governance', 'hash', 'hmac'
         );
         $matched_kw = 0;
         $lower_content = strtolower( $clean_text );

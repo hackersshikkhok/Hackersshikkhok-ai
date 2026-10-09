@@ -27,8 +27,11 @@ add_action( 'after_setup_theme', static function (): void {
 
 add_action( 'wp_enqueue_scripts', static function (): void {
     wp_enqueue_style( 'hs-theme-style', get_stylesheet_uri(), array(), '4.0.0' );
+    wp_enqueue_style( 'hs-cyber-lms', get_template_directory_uri() . '/assets/css/cyber-lms.css', array(), '4.0.0' );
     wp_enqueue_script( 'hs-theme-script', get_template_directory_uri() . '/assets/js/theme.js', array(), '4.0.0', true );
     wp_enqueue_script( 'hs-ui-script', get_template_directory_uri() . '/assets/js/hs-ui.js', array(), '4.0.0', true );
+    wp_enqueue_script( 'hs-theming-engine', get_template_directory_uri() . '/assets/js/theming-engine.js', array(), '4.0.0', true );
+    wp_enqueue_script( 'hs-terminal-engine', get_template_directory_uri() . '/assets/js/terminal-engine.js', array(), '4.0.0', true );
 } );
 
 add_action( 'admin_notices', static function (): void {

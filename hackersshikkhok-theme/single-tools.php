@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 get_header();
 
- = get_post_field( 'post_name', get_the_ID() );
+$tool_slug = get_post_field( 'post_name', get_the_ID() );
 ?>
 
 <main id="primary" class="site-main hs-single-tool-workspace hs-section-container">
@@ -31,7 +31,7 @@ get_header();
 
             <!-- Direct Interactive Tool Mount -->
             <section class="hs-tool-workspace-container" style="margin:24px 0;">
-                <?php echo do_shortcode( '[hs_developer_tools tool="' . esc_attr(  ) . '"]' ); ?>
+                <?php echo do_shortcode( '[hs_developer_tools tool="' . esc_attr( $tool_slug ) . '"]' ); ?>
             </section>
 
             <!-- AdSense Compliant Banner Slot -->

@@ -20,6 +20,7 @@ import { UniversalSocialAndUserHub } from './components/UniversalSocialAndUserHu
 import { EcosystemExpansionAndAudit114 } from './components/EcosystemExpansionAndAudit114';
 import { NativeMasterSpecHub } from './components/NativeMasterSpecHub';
 import { CyberAcademyAndLmsHub } from './components/CyberAcademyAndLmsHub';
+import { MasterCyberAcademyEngineHub } from './components/MasterCyberAcademyEngineHub';
 import { EngineeringCompletionAndHardeningHub } from './components/EngineeringCompletionAndHardeningHub';
 import {
   Search,
@@ -256,8 +257,8 @@ export default function App() {
               </button>
             </nav>
 
-            {/* Vertically Stacked Download Buttons (উপর-নিচে সাজানো দুটি ডাউনলোড বাটন) */}
-            <div className="flex flex-col gap-1.5 min-w-[235px] sm:min-w-[260px]">
+            {/* Vertically Stacked Download Buttons (উপর-নিচে সাজানো ডাউনলোড বাটনসমূহ) */}
+            <div className="flex flex-col gap-1.5 min-w-[245px] sm:min-w-[270px]">
               <button
                 onClick={() => handleDownloadZip('theme')}
                 title="Click to dynamically package and download hackersshikkhok-theme.zip (with screenshot.png)"
@@ -277,6 +278,17 @@ export default function App() {
                 <span>⚙️ Plugin (Engine Zip)</span>
                 <span className="font-mono text-[11px] bg-black/25 px-1.5 py-0.5 rounded">
                   {coreFileCount + 2} files 🔌
+                </span>
+              </button>
+
+              <button
+                onClick={() => handleDownloadZip('docs')}
+                title="Click to download Developer Documentation & System Architecture Guide (.zip)"
+                className="w-full px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-95 text-[#050811] font-extrabold text-xs flex items-center justify-between gap-2 shadow-[0_0_15px_rgba(16,185,129,0.35)] transition-all cursor-pointer whitespace-nowrap"
+              >
+                <span>📚 Dev Docs &amp; Architecture</span>
+                <span className="font-mono text-[11px] bg-[#050811]/20 px-1.5 py-0.5 rounded">
+                  {docsFileCount} docs 📥
                 </span>
               </button>
             </div>
@@ -507,6 +519,9 @@ export default function App() {
           themeFileCount={themeFileCount}
           coreFileCount={coreFileCount}
         />
+
+        {/* 7-MODULE MASTER SPECIFICATION & AUTONOMOUS CYBER ACADEMY ENGINE */}
+        <MasterCyberAcademyEngineHub />
 
         {/* COMPLETE PROFESSIONAL CYBERSECURITY ACADEMY & LEARNING SYSTEM (SECTIONS 0-154) */}
         <CyberAcademyAndLmsHub

@@ -335,6 +335,10 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
   ]);
   const [noteInput, setNoteInput] = useState('');
   const [bookmarkedLessonIds, setBookmarkedLessonIds] = useState<string[]>(['les-2']);
+  const [activeVectorDiagram, setActiveVectorDiagram] = useState<'sqli' | 'jwt' | 'dmz' | 'xss'>('sqli');
+  const [ttsIsPlaying, setTtsIsPlaying] = useState<boolean>(false);
+  const [ttsGender, setTtsGender] = useState<'female' | 'male'>('female');
+  const [ctfLessonFlagInput, setCtfLessonFlagInput] = useState<string>('');
 
   // Workspace 3: Safe Authorized Cyber Lab & Terminal Simulator
   const [terminalHistory, setTerminalHistory] = useState<
@@ -1365,19 +1369,218 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
               </div>
             </div>
 
-            {/* Interactive Visual Security Architecture Diagram (Sections 14, 15, 16) */}
-            <div className="rounded-xl border border-[#00f5d4]/30 bg-slate-950 p-4 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-extrabold text-[#00f5d4]">
-                  🗺️ ইন্টারেক্টিভ ডিফেন্স-ইন-ডেপথ ডায়াগ্রাম (যেকোনো নোডে ক্লিক করে সিকিউরিটি লেয়ার দেখুন)
-                </span>
-                <span className="text-[11px] font-mono text-slate-400">
-                  Sections 14–16 Visual Teaching Engine
-                </span>
+            {/* Interactive Visual Security Architecture Diagram & Red Arrow Vector Engine */}
+            <div className="rounded-xl border border-[#00f5d4]/40 bg-slate-950 p-4 space-y-4 shadow-lg shadow-[#00f5d4]/10">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[11px] font-mono px-2 py-0.5 font-bold">
+                    RED CALLOUT ARROWS
+                  </span>
+                  <span className="text-xs font-extrabold text-[#00f5d4]">
+                    📐 ডায়নামিক ভেক্টর ডায়াগ্রাম ও আর্কিটেকচার অ্যানোটেশন ইঞ্জিন (SVG_Annotator)
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { id: 'sqli', label: '🛡️ SQLi Prepared Statements' },
+                    { id: 'jwt', label: '🔐 JWT Token Signature' },
+                    { id: 'dmz', label: '🌐 DMZ Network Defense' },
+                    { id: 'xss', label: '⚡ XSS Encoding Shield' }
+                  ].map((diag) => (
+                    <button
+                      key={diag.id}
+                      onClick={() => setActiveVectorDiagram(diag.id as typeof activeVectorDiagram)}
+                      className={`rounded-lg px-2.5 py-1 text-[11px] font-mono font-bold transition cursor-pointer ${
+                        activeVectorDiagram === diag.id
+                          ? 'bg-[#00f5d4] text-slate-950 shadow-md'
+                          : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white'
+                      }`}
+                    >
+                      {diag.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dynamic SVG Vector Stage with Red Callout Arrows */}
+              <div className="rounded-xl border border-slate-800 bg-[#0a0e17] p-3 overflow-hidden">
+                {activeVectorDiagram === 'sqli' && (
+                  <svg viewBox="0 0 900 380" className="w-full h-auto block select-none">
+                    <defs>
+                      <marker id="redArr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#ff3366" />
+                      </marker>
+                      <marker id="cyanArr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#00f5d4" />
+                      </marker>
+                      <marker id="greenArr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#00ff66" />
+                      </marker>
+                    </defs>
+                    <g stroke="#1e293b" strokeWidth="1" opacity="0.4">
+                      <line x1="0" y1="60" x2="900" y2="60" />
+                      <line x1="0" y1="180" x2="900" y2="180" />
+                      <line x1="0" y1="300" x2="900" y2="300" />
+                    </g>
+                    {/* STEP 1: Client Input */}
+                    <g transform="translate(40, 60)">
+                      <rect width="210" height="150" rx="10" fill="#111827" stroke="#374151" strokeWidth="2" />
+                      <rect width="210" height="30" rx="10" fill="#1f2937" />
+                      <text x="20" y="20" fill="#9ca3af" fontFamily="monospace" fontSize="11" fontWeight="bold">STEP 1: CLIENT INPUT</text>
+                      <text x="15" y="55" fill="#e5e7eb" fontFamily="sans-serif" fontSize="11">Untrusted User String:</text>
+                      <rect x="15" y="65" width="180" height="28" rx="4" fill="#030712" stroke="#4b5563" />
+                      <text x="22" y="83" fill="#f87171" fontFamily="monospace" fontSize="10">admin' OR '1'='1'--</text>
+                      <text x="15" y="125" fill="#94a3b8" fontFamily="sans-serif" fontSize="10">Malicious injection payload</text>
+                    </g>
+                    {/* Step 1 Badge */}
+                    <rect x="110" y="45" width="65" height="22" rx="11" fill="#7c3aed" />
+                    <text x="142" y="60" fill="#ffffff" fontFamily="monospace" fontSize="11" fontWeight="bold" textAnchor="middle">STEP 1</text>
+                    {/* Flow arrow */}
+                    <path d="M 250 135 L 340 135" stroke="#00f5d4" strokeWidth="2.5" strokeDasharray="5 3" markerEnd="url(#cyanArr)" />
+                    {/* STEP 2: Prepared Statement */}
+                    <g transform="translate(350, 60)">
+                      <rect width="240" height="150" rx="10" fill="#111827" stroke="#00f5d4" strokeWidth="2" />
+                      <rect width="240" height="30" rx="10" fill="#0b2326" />
+                      <text x="120" y="20" fill="#00f5d4" fontFamily="monospace" fontSize="11" fontWeight="bold" textAnchor="middle">STEP 2: PDO PREPARE</text>
+                      <rect x="15" y="45" width="210" height="40" rx="6" fill="#050811" stroke="#10b981" />
+                      <text x="22" y="62" fill="#10b981" fontFamily="monospace" fontSize="10">SELECT * FROM users</text>
+                      <text x="22" y="76" fill="#00f5d4" fontFamily="monospace" fontSize="10">WHERE user = :u</text>
+                      <rect x="15" y="95" width="210" height="30" rx="6" fill="#1e1b4b" stroke="#7c3aed" />
+                      <text x="22" y="114" fill="#a78bfa" fontFamily="monospace" fontSize="10">stmt-&gt;bindParam(':u', $val)</text>
+                    </g>
+                    <rect x="440" y="45" width="65" height="22" rx="11" fill="#00f5d4" />
+                    <text x="472" y="60" fill="#050811" fontFamily="monospace" fontSize="11" fontWeight="bold" textAnchor="middle">STEP 2</text>
+                    {/* RED CALLOUT ARROW 1 */}
+                    <path d="M 470 290 C 470 250 470 230 470 215" stroke="#ff3366" strokeWidth="3.5" markerEnd="url(#redArr)" />
+                    <g transform="translate(350, 290)">
+                      <rect width="240" height="65" rx="8" fill="#2d0614" stroke="#ff3366" strokeWidth="1.5" />
+                      <text x="15" y="22" fill="#ff3366" fontFamily="sans-serif" fontWeight="bold" fontSize="11">🚨 CRITICAL DEFENSE MECHANISM</text>
+                      <text x="15" y="40" fill="#fecdd3" fontFamily="sans-serif" fontSize="10">Database binds value as strict</text>
+                      <text x="15" y="54" fill="#ffffff" fontFamily="monospace" fontWeight="bold" fontSize="10">LITERAL STRING — Code is never parsed!</text>
+                    </g>
+                    {/* Flow arrow to DB */}
+                    <path d="M 590 135 L 675 135" stroke="#00ff66" strokeWidth="2.5" markerEnd="url(#greenArr)" />
+                    {/* STEP 3: DB Execution */}
+                    <g transform="translate(685, 60)">
+                      <rect width="180" height="150" rx="10" fill="#111827" stroke="#00ff66" strokeWidth="2" />
+                      <rect width="180" height="30" rx="10" fill="#06301a" />
+                      <text x="90" y="20" fill="#00ff66" fontFamily="monospace" fontSize="11" fontWeight="bold" textAnchor="middle">DATABASE ENGINE</text>
+                      <rect x="20" y="45" width="140" height="24" rx="4" fill="#052e16" stroke="#00ff66" />
+                      <text x="90" y="61" fill="#86efac" fontFamily="monospace" fontSize="10" textAnchor="middle">TABLE LOCK: OK</text>
+                      <text x="90" y="105" fill="#86efac" fontFamily="sans-serif" fontSize="12" fontWeight="bold" textAnchor="middle">SAFE EXECUTION</text>
+                      <text x="90" y="125" fill="#6ee7b7" fontFamily="sans-serif" fontSize="10" textAnchor="middle">Zero Injection</text>
+                    </g>
+                    <rect x="745" y="45" width="65" height="22" rx="11" fill="#00ff66" />
+                    <text x="777" y="60" fill="#050811" fontFamily="monospace" fontSize="11" fontWeight="bold" textAnchor="middle">STEP 3</text>
+                  </svg>
+                )}
+
+                {activeVectorDiagram === 'jwt' && (
+                  <svg viewBox="0 0 900 350" className="w-full h-auto block select-none">
+                    <defs>
+                      <marker id="redArrJwt" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#ff3366" />
+                      </marker>
+                    </defs>
+                    <g transform="translate(50, 50)">
+                      <rect x="0" y="0" width="180" height="110" rx="8" fill="#18181b" stroke="#ef4444" strokeWidth="2" />
+                      <text x="15" y="26" fill="#ef4444" fontFamily="monospace" fontWeight="bold" fontSize="12">1. HEADER (alg/typ)</text>
+                      <text x="15" y="50" fill="#9ca3af" fontFamily="monospace" fontSize="10">&#123;&quot;alg&quot;: &quot;HS256&quot;&#125;</text>
+                      <rect x="200" y="0" width="220" height="110" rx="8" fill="#18181b" stroke="#a78bfa" strokeWidth="2" />
+                      <text x="215" y="26" fill="#a78bfa" fontFamily="monospace" fontWeight="bold" fontSize="12">2. PAYLOAD (claims)</text>
+                      <text x="215" y="50" fill="#9ca3af" fontFamily="monospace" fontSize="10">&#123;&quot;sub&quot;: &quot;1042&quot;, &quot;role&quot;: &quot;cadet&quot;&#125;</text>
+                      <rect x="440" y="0" width="220" height="110" rx="8" fill="#18181b" stroke="#00f5d4" strokeWidth="2" />
+                      <text x="455" y="26" fill="#00f5d4" fontFamily="monospace" fontWeight="bold" fontSize="12">3. HMAC SIGNATURE</text>
+                      <text x="455" y="50" fill="#9ca3af" fontFamily="monospace" fontSize="9">HMACSHA256(H.P, SECRET)</text>
+                    </g>
+                    <g transform="translate(730, 50)">
+                      <rect width="130" height="110" rx="8" fill="#052e16" stroke="#10b981" strokeWidth="2" />
+                      <text x="65" y="45" fill="#34d399" fontFamily="monospace" fontWeight="bold" fontSize="12" textAnchor="middle">GATEWAY</text>
+                      <text x="65" y="75" fill="#6ee7b7" fontFamily="sans-serif" fontSize="10" textAnchor="middle">Sig Verified</text>
+                    </g>
+                    <path d="M 550 250 C 550 200 550 180 550 165" stroke="#ff3366" strokeWidth="3.5" markerEnd="url(#redArrJwt)" />
+                    <g transform="translate(410, 250)">
+                      <rect width="280" height="70" rx="8" fill="#2d0614" stroke="#ff3366" strokeWidth="1.5" />
+                      <text x="15" y="24" fill="#ff3366" fontFamily="sans-serif" fontWeight="bold" fontSize="11">🚨 CRYPTO VERIFICATION POINT</text>
+                      <text x="15" y="44" fill="#fecdd3" fontFamily="sans-serif" fontSize="10">If attacker changes role to admin,</text>
+                      <text x="15" y="58" fill="#ffffff" fontFamily="monospace" fontWeight="bold" fontSize="10">signature mismatch drops request (401)!</text>
+                    </g>
+                  </svg>
+                )}
+
+                {activeVectorDiagram === 'dmz' && (
+                  <svg viewBox="0 0 900 350" className="w-full h-auto block select-none">
+                    <defs>
+                      <marker id="redArrDmz" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#ff3366" />
+                      </marker>
+                    </defs>
+                    <g transform="translate(40, 60)">
+                      <rect width="180" height="130" rx="10" fill="#18181b" stroke="#6b7280" strokeWidth="2" />
+                      <text x="90" y="30" fill="#9ca3af" fontFamily="monospace" fontWeight="bold" fontSize="11" textAnchor="middle">PUBLIC INTERNET</text>
+                      <text x="90" y="70" fill="#e5e7eb" fontFamily="sans-serif" fontSize="10" textAnchor="middle">Untrusted Traffic</text>
+                    </g>
+                    <g transform="translate(250, 40)">
+                      <rect width="50" height="170" rx="8" fill="#7f1d1d" stroke="#ef4444" strokeWidth="2" />
+                      <text x="25" y="85" fill="#fca5a5" fontFamily="monospace" fontWeight="bold" fontSize="10" textAnchor="middle" transform="rotate(-90 25 85)">EXT FW</text>
+                    </g>
+                    <g transform="translate(330, 60)">
+                      <rect width="210" height="130" rx="10" fill="#0f172a" stroke="#00f5d4" strokeWidth="2" />
+                      <text x="105" y="30" fill="#00f5d4" fontFamily="monospace" fontWeight="bold" fontSize="11" textAnchor="middle">DMZ ZONE (ISOLATED)</text>
+                      <text x="105" y="65" fill="#e2e8f0" fontFamily="sans-serif" fontSize="10" textAnchor="middle">Nginx Reverse Proxy / WAF</text>
+                    </g>
+                    <g transform="translate(570, 40)">
+                      <rect width="50" height="170" rx="8" fill="#7f1d1d" stroke="#ef4444" strokeWidth="2" />
+                      <text x="25" y="85" fill="#fca5a5" fontFamily="monospace" fontWeight="bold" fontSize="10" textAnchor="middle" transform="rotate(-90 25 85)">INT FW</text>
+                    </g>
+                    <g transform="translate(650, 60)">
+                      <rect width="210" height="130" rx="10" fill="#052e16" stroke="#10b981" strokeWidth="2" />
+                      <text x="105" y="30" fill="#34d399" fontFamily="monospace" fontWeight="bold" fontSize="11" textAnchor="middle">SECURE CORE VAULT</text>
+                      <text x="105" y="65" fill="#e2e8f0" fontFamily="sans-serif" fontSize="10" textAnchor="middle">MySQL Cluster (No Public IP)</text>
+                    </g>
+                    <path d="M 595 260 C 595 230 595 220 595 212" stroke="#ff3366" strokeWidth="3.5" markerEnd="url(#redArrDmz)" />
+                    <g transform="translate(460, 260)">
+                      <rect width="270" height="60" rx="8" fill="#2d0614" stroke="#ff3366" strokeWidth="1.5" />
+                      <text x="15" y="24" fill="#ff3366" fontFamily="sans-serif" fontWeight="bold" fontSize="11">🚨 BOUNDARY POLICY</text>
+                      <text x="15" y="44" fill="#ffffff" fontFamily="monospace" fontSize="9">Port 3306 ONLY from DMZ Proxy IP</text>
+                    </g>
+                  </svg>
+                )}
+
+                {activeVectorDiagram === 'xss' && (
+                  <svg viewBox="0 0 900 330" className="w-full h-auto block select-none">
+                    <defs>
+                      <marker id="redArrXss" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#ff3366" />
+                      </marker>
+                    </defs>
+                    <g transform="translate(50, 50)">
+                      <rect width="210" height="110" rx="8" fill="#18181b" stroke="#ef4444" strokeWidth="2" />
+                      <text x="15" y="26" fill="#f87171" fontFamily="monospace" fontWeight="bold" fontSize="11">MALICIOUS INPUT</text>
+                      <text x="15" y="55" fill="#fca5a5" fontFamily="monospace" fontSize="10">&lt;script&gt;alert(1)&lt;/script&gt;</text>
+                    </g>
+                    <g transform="translate(340, 50)">
+                      <rect width="220" height="110" rx="8" fill="#18181b" stroke="#10b981" strokeWidth="2" />
+                      <text x="15" y="26" fill="#34d399" fontFamily="monospace" fontWeight="bold" fontSize="11">CONTEXT ESCAPER</text>
+                      <text x="15" y="55" fill="#86efac" fontFamily="monospace" fontSize="10">htmlspecialchars($input)</text>
+                    </g>
+                    <g transform="translate(640, 50)">
+                      <rect width="210" height="110" rx="8" fill="#18181b" stroke="#00f5d4" strokeWidth="2" />
+                      <text x="15" y="26" fill="#00f5d4" fontFamily="monospace" fontWeight="bold" fontSize="11">SAFE BROWSER DOM</text>
+                      <text x="15" y="55" fill="#67e8f9" fontFamily="sans-serif" fontSize="10">Rendered safely as text string</text>
+                    </g>
+                    <path d="M 450 230 C 450 200 450 180 450 165" stroke="#ff3366" strokeWidth="3.5" markerEnd="url(#redArrXss)" />
+                    <g transform="translate(310, 230)">
+                      <rect width="280" height="60" rx="8" fill="#2d0614" stroke="#ff3366" strokeWidth="1.5" />
+                      <text x="15" y="24" fill="#ff3366" fontFamily="sans-serif" fontWeight="bold" fontSize="11">🚨 SANITIZATION BARRIER</text>
+                      <text x="15" y="44" fill="#ffffff" fontFamily="monospace" fontSize="9">Always apply context-aware encoding!</text>
+                    </g>
+                  </svg>
+                )}
               </div>
 
               {/* Clickable Network Nodes Flow */}
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-800">
                 {INTERACTIVE_DIAGRAM_NODES.map((node) => {
                   const active = selectedDiagramNode.id === node.id;
                   return (
@@ -1511,8 +1714,108 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
             </div>
           </div>
 
-          {/* RIGHT COLUMN (3 Cols): Personal Notes, Protected Resources & Q&A Discussion */}
+          {/* RIGHT COLUMN (3 Cols): TTS Player, CTF Flag Challenge, Personal Notes & Resources */}
           <div className="lg:col-span-3 rounded-2xl border border-slate-800 bg-[#0b1120] p-4 space-y-4">
+            {/* Audio Lecture TTS Player (Male/Female Toggle) */}
+            <div className="rounded-xl border border-[#00f5d4]/30 bg-slate-950 p-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-[#00f5d4] font-bold">🎙️ AUDIO LECTURE (TTS)</span>
+                <span className="text-[10px] text-slate-400 font-mono">SpeechSynthesis</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={ttsGender}
+                  onChange={(e) => setTtsGender(e.target.value as typeof ttsGender)}
+                  className="rounded-lg bg-slate-900 border border-slate-700 px-2.5 py-1 text-xs text-cyan-300 font-mono"
+                >
+                  <option value="female">👩 Female Cyber Voice</option>
+                  <option value="male">👨 Male Cyber Voice</option>
+                </select>
+                <button
+                  onClick={() => {
+                    if (!('speechSynthesis' in window)) {
+                      onNotify?.('⚠️ আপনার ব্রাউজারে Text-To-Speech সাপোর্ট নেই।');
+                      return;
+                    }
+                    if (ttsIsPlaying) {
+                      window.speechSynthesis.cancel();
+                      setTtsIsPlaying(false);
+                      onNotify?.('⏹️ অডিও প্লেব্যাক থামানো হয়েছে।');
+                    } else {
+                      const text = `${activeLesson.titleBn}. ${activeLesson.moduleTitle}. ${selectedDiagramNode.label}. ${selectedDiagramNode.defenseMitigationBn}`;
+                      const utterance = new SpeechSynthesisUtterance(text);
+                      utterance.rate = 0.95;
+                      utterance.onend = () => setTtsIsPlaying(false);
+                      window.speechSynthesis.speak(utterance);
+                      setTtsIsPlaying(true);
+                      onNotify?.(`🔊 অডিও লেকচার প্লে হচ্ছে (${ttsGender === 'female' ? 'Female' : 'Male'} Voice)...`);
+                    }
+                  }}
+                  className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
+                    ttsIsPlaying
+                      ? 'bg-rose-500 text-white animate-pulse'
+                      : 'bg-[#00f5d4]/20 border border-[#00f5d4]/50 text-[#00f5d4] hover:bg-[#00f5d4]/30'
+                  }`}
+                >
+                  {ttsIsPlaying ? '⏹️ Stop Audio' : '🔊 Listen Lecture'}
+                </button>
+              </div>
+            </div>
+
+            {/* Active CTF Flag Challenge & Instant Wallet Bounty Claim */}
+            <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-rose-400 font-extrabold">🚩 CTF FLAG BOUNTY</span>
+                <span className="rounded bg-rose-500 text-slate-950 px-2 py-0.5 text-[10px] font-mono font-bold">
+                  +150 XP &amp; ৳25 BDT
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300 leading-snug">
+                টার্মিনাল বা ডায়াগ্রাম বিশ্লেষণ করে প্রাপ্ত ফ্ল্যাগ টোকেন সাবমিট করে ওয়ালেটে ক্রেডিট অর্জন করুন।
+              </p>
+              <div className="space-y-1.5">
+                <input
+                  type="text"
+                  value={ctfLessonFlagInput}
+                  onChange={(e) => setCtfLessonFlagInput(e.target.value)}
+                  placeholder="HS{PRePARED_STaTEMENTS_PrOTECT_ALL_2026}"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs font-mono text-[#00f5d4] placeholder:text-slate-600"
+                />
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => {
+                      const token = ctfLessonFlagInput.trim();
+                      if (
+                        token === 'HS{PRePARED_STaTEMENTS_PrOTECT_ALL_2026}' ||
+                        token === 'HS{DOM_ENCODING_DEFEATS_XSS_2026}' ||
+                        token === 'HS{JWT_HMAC_SIGNATURE_VERIFIED_2026}' ||
+                        token === 'HS{DMZ_FIREWALL_ISOLATION_LOCKED_2026}' ||
+                        token === 'HS{BLUE_TEAM_SIEM_DEFENDER_2026}'
+                      ) {
+                        onEarnPoints?.(150, `🎯 CTF Flag Verified! +150 XP & ৳25 BDT ক্যাডেট ওয়ালেটে জমা হয়েছে!`);
+                        onNotify?.(`🏆 অভিনন্দন! "${token}" ফ্ল্যাগটি সঠিক! +150 XP এবং ৳25.00 BDT ওয়ালেটে জমা হয়েছে।`);
+                        setCtfLessonFlagInput('');
+                      } else {
+                        onNotify?.('❌ ভুল ফ্ল্যাগ টোকেন! ডায়াগ্রামের রেড অ্যারো বা হিন্ট চেক করুন।');
+                      }
+                    }}
+                    className="flex-1 rounded-lg bg-rose-500 hover:bg-rose-600 py-1.5 text-xs font-extrabold text-white cursor-pointer"
+                  >
+                    🎯 Verify &amp; Claim Bounty
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCtfLessonFlagInput('HS{PRePARED_STaTEMENTS_PrOTECT_ALL_2026}');
+                    }}
+                    className="rounded-lg bg-slate-900 border border-slate-700 px-2 text-[10px] font-mono text-cyan-300 cursor-pointer"
+                    title="Paste Sample Flag"
+                  >
+                    Paste
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div>
               <span className="text-xs font-mono text-[#00f5d4] font-bold">
                 PERSONAL NOTES &amp; RESOURCES

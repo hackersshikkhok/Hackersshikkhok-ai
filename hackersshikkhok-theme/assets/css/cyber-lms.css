@@ -1,0 +1,639 @@
+/*
+ * HackersShikkhok — Ultra-Pro Cyber LMS & CTF Sandbox Stylesheet
+ * Brand: HackersShikkhok.com
+ * Theme: Cyberpunk Neon & Glassmorphism 2040 Standard
+ */
+
+:root {
+  --lms-bg: #0a0e17;
+  --lms-surface: #0f172a;
+  --lms-surface-glass: rgba(15, 23, 42, 0.75);
+  --lms-border: rgba(0, 245, 212, 0.25);
+  --lms-neon-cyan: #00f5d4;
+  --lms-neon-green: #00ff66;
+  --lms-neon-purple: #7c3aed;
+  --lms-neon-red: #ff3366;
+  --lms-neon-amber: #f59e0b;
+  --lms-text: #e2e8f0;
+  --lms-text-muted: #94a3b8;
+  --lms-terminal-bg: #050811;
+
+  /* Dynamic Category Variables */
+  --cyber-primary: #00ff66;
+  --cyber-glow: rgba(0, 255, 102, 0.45);
+  --cyber-secondary: #052e16;
+  --scanline-intensity: 0.15;
+  --font-base-scale: 1rem;
+}
+
+/* 1. Category-Based Dynamic Neon Aesthetics */
+.theme-web-hacking {
+  --cyber-primary: #00ff66;
+  --cyber-glow: rgba(0, 255, 102, 0.5);
+  --cyber-secondary: #052e16;
+}
+.theme-web-hacking .cyber-scanlines-active::before {
+  opacity: 0.25;
+  animation: matrixScan 8s linear infinite;
+}
+
+.theme-social-defense {
+  --cyber-primary: #ff9900;
+  --cyber-glow: rgba(255, 153, 0, 0.55);
+  --cyber-secondary: #451a03;
+}
+.theme-social-defense .radar-sweep-overlay {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 0deg, rgba(255, 153, 0, 0.15), transparent 60deg);
+  animation: radarSweep 4s linear infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.theme-network-red-team {
+  --cyber-primary: #ff0055;
+  --cyber-glow: rgba(255, 0, 85, 0.55);
+  --cyber-secondary: #4c0519;
+}
+.theme-network-red-team .glitch-alert-pulse {
+  animation: redThreatGlitch 2s steps(2, start) infinite;
+}
+
+.theme-forensics-blue-team {
+  --cyber-primary: #00f0ff;
+  --cyber-glow: rgba(0, 240, 255, 0.5);
+  --cyber-secondary: #082f49;
+}
+.theme-forensics-blue-team .cyber-shield-pulse {
+  animation: blueDataShield 3s ease-in-out infinite alternate;
+}
+
+.theme-defensive-systems {
+  --cyber-primary: #a100ff;
+  --cyber-glow: rgba(161, 0, 255, 0.6);
+  --cyber-secondary: #3b0764;
+}
+.theme-defensive-systems .holo-terminal-border {
+  box-shadow: 0 0 25px rgba(161, 0, 255, 0.35), inset 0 0 15px rgba(161, 0, 255, 0.2);
+}
+
+/* Power Level HUD Modes */
+.hud-minimalist {
+  border-color: #334155 !important;
+  box-shadow: none !important;
+}
+.hud-cyberpunk-overclock {
+  border-color: var(--cyber-primary) !important;
+  box-shadow: 0 0 30px var(--cyber-glow), inset 0 0 15px var(--cyber-glow) !important;
+  animation: overclockBorder 3s infinite alternate;
+}
+.hud-ide-developer {
+  border-color: #10b981 !important;
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Accessibility & Typography Scale */
+.text-scale-sm { font-size: 0.9rem !important; }
+.text-scale-md { font-size: 1rem !important; }
+.text-scale-lg { font-size: 1.15rem !important; }
+.high-contrast-mode {
+  --lms-bg: #000000 !important;
+  --lms-surface: #0a0a0a !important;
+  --lms-text: #ffffff !important;
+  --lms-border: #ffffff !important;
+  filter: contrast(1.2);
+}
+
+@keyframes matrixScan {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+@keyframes radarSweep {
+  100% { transform: rotate(360deg); }
+}
+@keyframes redThreatGlitch {
+  0%, 100% { opacity: 1; transform: translate(0, 0); }
+  50% { opacity: 0.85; transform: translate(-2px, 1px); }
+}
+@keyframes blueDataShield {
+  0% { box-shadow: 0 0 10px rgba(0, 240, 255, 0.2); }
+  100% { box-shadow: 0 0 30px rgba(0, 240, 255, 0.6); }
+}
+@keyframes overclockBorder {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(15deg); }
+}
+
+/* 3-Column Cyber LMS Stage Container */
+.hs-cyber-lms-stage {
+  background-color: var(--lms-bg);
+  color: var(--lms-text);
+  min-height: 100vh;
+  padding: 1.5rem 1rem 3rem 1rem;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Cyber Scanline Overlay */
+.hs-cyber-lms-stage::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 100;
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* Top LMS Navigation & Status Bar */
+.hs-lms-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--lms-surface-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--lms-border);
+  border-radius: 14px;
+  padding: 0.85rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.hs-lms-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hs-lms-brand-badge {
+  background: linear-gradient(135deg, var(--lms-neon-cyan), var(--lms-neon-purple));
+  color: #050811;
+  font-weight: 900;
+  font-family: monospace;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 245, 212, 0.4);
+}
+
+.hs-lms-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.hs-lms-stat-pill {
+  background: #050811;
+  border: 1px solid rgba(0, 245, 212, 0.3);
+  padding: 0.3rem 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 3-Column Grid Layout */
+.hs-lms-layout-grid {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr) 340px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 1280px) {
+  .hs-lms-layout-grid {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+  .hs-lms-col-tools {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 900px) {
+  .hs-lms-layout-grid {
+    grid-template-columns: 1fr;
+  }
+  .hs-lms-col-tools {
+    grid-column: span 1;
+  }
+}
+
+/* COLUMN 1: Curriculum & Module Tree */
+.hs-lms-col-curriculum {
+  background: var(--lms-surface-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--lms-border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.hs-module-accordion {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  background: #0b1120;
+  transition: border-color 0.25s ease;
+}
+
+.hs-module-accordion:hover {
+  border-color: rgba(0, 245, 212, 0.35);
+}
+
+.hs-module-header {
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.85);
+  user-select: none;
+}
+
+.hs-module-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.hs-lesson-list {
+  padding: 0.4rem;
+  list-style: none;
+  margin: 0;
+}
+
+.hs-lesson-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: var(--lms-text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.25rem;
+}
+
+.hs-lesson-item:hover {
+  background: rgba(0, 245, 212, 0.1);
+  color: var(--lms-neon-cyan);
+}
+
+.hs-lesson-item.active {
+  background: rgba(0, 245, 212, 0.15);
+  color: var(--lms-neon-cyan);
+  border: 1px solid rgba(0, 245, 212, 0.4);
+  font-weight: 600;
+}
+
+.hs-lesson-item.completed {
+  color: var(--lms-neon-green);
+}
+
+.hs-lesson-lock {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+/* COLUMN 2: Stage, Terminal, Dynamic SVG Walkthrough */
+.hs-lms-col-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hs-stage-card {
+  background: var(--lms-surface-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--lms-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.hs-lesson-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.hs-lesson-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.hs-lesson-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  font-size: 0.75rem;
+  color: var(--lms-text-muted);
+  font-family: monospace;
+}
+
+/* Video Stage */
+.hs-video-frame-wrap {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 245, 212, 0.3);
+  margin-bottom: 1.5rem;
+  background: #050811;
+  box-shadow: 0 0 25px rgba(0, 245, 212, 0.15);
+}
+
+.hs-video-frame-wrap iframe {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  border: 0;
+}
+
+/* Lesson Markdown Content Presentation */
+.hs-lesson-body {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #cbd5e1;
+}
+
+.hs-lesson-body h1, .hs-lesson-body h2, .hs-lesson-body h3 {
+  color: #ffffff;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.hs-lesson-body pre {
+  background: var(--lms-terminal-bg);
+  border: 1px solid rgba(0, 245, 212, 0.25);
+  border-radius: 10px;
+  padding: 1.25rem;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: #a7f3d0;
+}
+
+.hs-lesson-body code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(0, 245, 212, 0.1);
+  color: var(--lms-neon-cyan);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+}
+
+/* Web Terminal Window (XTerm Style) */
+.hs-terminal-window {
+  background: var(--lms-terminal-bg);
+  border: 1px solid rgba(0, 255, 102, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(0, 255, 102, 0.12);
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.hs-terminal-header {
+  background: #0e1726;
+  border-bottom: 1px solid rgba(0, 255, 102, 0.2);
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hs-terminal-dots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.hs-terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.hs-dot-red { background: #ef4444; }
+.hs-dot-yellow { background: #f59e0b; }
+.hs-dot-green { background: #10b981; }
+
+.hs-terminal-title {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.hs-terminal-body {
+  padding: 1rem;
+  min-height: 220px;
+  max-height: 380px;
+  overflow-y: auto;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #86efac;
+}
+
+.hs-terminal-line {
+  margin-bottom: 0.35rem;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.hs-terminal-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.75rem 1rem;
+  background: #080d18;
+}
+
+.hs-terminal-prompt-label {
+  color: var(--lms-neon-green);
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.hs-terminal-input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+/* COLUMN 3: Scratchpad, Quiz, Text-to-Speech Player */
+.hs-lms-col-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.hs-tool-card {
+  background: var(--lms-surface-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--lms-border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.hs-tool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hs-tool-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* LocalStorage Scratchpad */
+.hs-scratchpad-textarea {
+  width: 100%;
+  min-height: 130px;
+  background: #050811;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: #e2e8f0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.hs-scratchpad-textarea:focus {
+  border-color: var(--lms-neon-cyan);
+}
+
+/* TTS Player */
+.hs-tts-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.hs-tts-btn {
+  background: rgba(0, 245, 212, 0.15);
+  border: 1px solid var(--lms-neon-cyan);
+  color: var(--lms-neon-cyan);
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hs-tts-btn:hover {
+  background: var(--lms-neon-cyan);
+  color: #050811;
+}
+
+.hs-voice-toggle {
+  background: #050811;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Interactive CTF Bounty Box */
+.hs-ctf-box {
+  background: linear-gradient(135deg, rgba(255, 51, 102, 0.1), rgba(124, 58, 237, 0.1));
+  border: 1px solid var(--lms-neon-red);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.hs-ctf-title {
+  color: var(--lms-neon-red);
+  font-size: 0.85rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hs-ctf-reward-tag {
+  background: rgba(255, 51, 102, 0.2);
+  color: #fecdd3;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+/* Animated Progress Bar */
+.hs-progress-track {
+  width: 100%;
+  height: 8px;
+  background: #050811;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hs-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--lms-neon-cyan), var(--lms-neon-green));
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  position: relative;
+}
+
+.hs-progress-fill::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: progress-sheen 2s infinite;
+}
+
+@keyframes progress-sheen {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes terminal-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.hs-terminal-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: var(--lms-neon-green);
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: terminal-cursor-blink 1s step-start infinite;
+}

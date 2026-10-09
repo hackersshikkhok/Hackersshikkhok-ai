@@ -138,9 +138,15 @@ export const WpPackageStudio: React.FC<WpPackageStudioProps> = ({
             </button>
             <button
               onClick={() => onDownloadPackage('docs')}
-              className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-[#050811] font-extrabold text-xs flex items-center gap-1.5 cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.3)]"
             >
-              📚 Docs Zip ({docsCount})
+              📚 Dev Docs Zip ({docsCount}) 📥
+            </button>
+            <button
+              onClick={() => onDownloadPackage('all')}
+              className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+            >
+              📦 Complete All Zip
             </button>
             {onClose && (
               <button

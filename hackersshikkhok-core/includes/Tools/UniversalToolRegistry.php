@@ -189,6 +189,45 @@ final class UniversalToolRegistry {
             'schema_type' => 'WebApplication',
             'version' => '1.0.0'
         );
+        $tools['youtube-downloader'] = array(
+            'id' => 'youtube-downloader',
+            'name' => 'YouTube & Media Video Downloader Pro',
+            'name_bn' => 'ইউটিউব ভিডিও ডাউনলোডার প্রো',
+            'center' => 'video',
+            'category' => 'Video Tools',
+            'icon' => 'Youtube',
+            'short_desc' => 'Download YouTube videos in MP4, 1080p, 720p, and extract audio instantly (SaveFrom style).',
+            'processor_type' => 'server',
+            'keywords' => array("youtube downloader","savefrom","video download mp4","extract youtube audio"),
+            'schema_type' => 'WebApplication',
+            'version' => '1.0.0'
+        );
+        $tools['wp-detector'] = array(
+            'id' => 'wp-detector',
+            'name' => 'WordPress Theme & Plugin Detector Pro',
+            'name_bn' => 'ওয়ার্ডপ্রেস থিম ও প্লাগইন ডিটেক্টর',
+            'center' => 'seo',
+            'category' => 'WordPress Tools',
+            'icon' => 'Search',
+            'short_desc' => 'Detect active WordPress themes, versions, author, and installed plugins of any website (WPDetector style).',
+            'processor_type' => 'server',
+            'keywords' => array("wpdetector","wordpress theme detector","find wordpress plugins","detect theme"),
+            'schema_type' => 'WebApplication',
+            'version' => '1.0.0'
+        );
+        $tools['plagiarism-checker'] = array(
+            'id' => 'plagiarism-checker',
+            'name' => 'AI Plagiarism & Originality Checker Pro',
+            'name_bn' => 'প্লাজিয়ারিজম ও অরিজিনালিটি চেকার',
+            'center' => 'text-writing',
+            'category' => 'Content Tools',
+            'icon' => 'FileText',
+            'short_desc' => 'Check text originality, sentence match breakdown, keyword density, and SEO uniqueness (DupliChecker style).',
+            'processor_type' => 'server',
+            'keywords' => array("duplichecker","plagiarism checker","originality checker","check duplicate content"),
+            'schema_type' => 'WebApplication',
+            'version' => '1.0.0'
+        );
         $tools['css-gradient-generator'] = array(
             'id' => 'css-gradient-generator',
             'name' => 'CSS Neon & RGB Gradient Generator',

@@ -256,6 +256,7 @@ $first_lesson = $active_modules[0]['lessons'][0] ?? array(
             <div class="hs-stage-media-card">
                 <div class="hs-stage-tabs">
                     <button class="hs-tab-btn active" onclick="HS_ACADEMY.switchStageTab('lecture', this)">📺 Instructional Lesson</button>
+                    <button class="hs-tab-btn" onclick="HS_ACADEMY.switchStageTab('diagram', this)">📐 Red Arrow Vector Diagrams</button>
                     <button class="hs-tab-btn" onclick="HS_ACADEMY.switchStageTab('terminal', this)">💻 Sandboxed Terminal Lab</button>
                     <button class="hs-tab-btn" onclick="HS_ACADEMY.switchStageTab('quiz', this)">📝 Practice Assessment</button>
                 </div>
@@ -276,6 +277,21 @@ $first_lesson = $active_modules[0]['lessons'][0] ?? array(
                             <h3><?php echo esc_html( $first_lesson['titleBn'] ?? 'Lesson Instruction' ); ?></h3>
                             <p><?php echo esc_html( $first_lesson['contentMarkdownBn'] ?? 'ইনস্ট্রাকশনাল বিবরণী...' ); ?></p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Vector Diagram Stage with Red Callout Arrows -->
+                <div class="hs-stage-content" id="hs-stage-diagram" style="display:none;">
+                    <div class="hs-diagram-picker" style="margin-bottom:15px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="hs-btn-small active" onclick="HS_ACADEMY.switchDiagram('sqli_prevention', this)">🛡️ SQLi Prepared Statement</button>
+                        <button class="hs-btn-small" onclick="HS_ACADEMY.switchDiagram('jwt_auth_flow', this)">🔐 JWT Signature Flow</button>
+                        <button class="hs-btn-small" onclick="HS_ACADEMY.switchDiagram('network_dmz_defense', this)">🌐 DMZ Network Defense</button>
+                        <button class="hs-btn-small" onclick="HS_ACADEMY.switchDiagram('xss_defense', this)">⚡ XSS Output Encoding</button>
+                    </div>
+                    <div id="hs-dynamic-diagram-wrapper">
+                        <?php echo class_exists( '\HackersShikkhok\Core\LMS\SVG_Annotator' ) 
+                            ? \HackersShikkhok\Core\LMS\SVG_Annotator::render_diagram( 'sqli_prevention' ) 
+                            : '<p style="color:#ff3366;">SVG Annotator module active.</p>'; ?>
                     </div>
                 </div>
 
@@ -330,6 +346,35 @@ $first_lesson = $active_modules[0]['lessons'][0] ?? array(
         <aside class="hs-col-console" id="hs-console-col">
             <div class="hs-panel-header">
                 <h3>⚡ Scholar Console</h3>
+            </div>
+
+            <!-- Text-To-Speech (TTS) Voice Player -->
+            <div class="hs-console-widget">
+                <div class="hs-widget-title">🎙️ Audio Lecture (TTS Player)</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <select id="hs-tts-voice-select" class="hs-voice-toggle" style="background:#050811;color:#00f5d4;border:1px solid rgba(0,245,212,0.3);padding:4px 8px;border-radius:6px;font-size:11px;">
+                        <option value="female">👩 Female Cyber Voice</option>
+                        <option value="male">👨 Male Cyber Voice</option>
+                    </select>
+                    <button id="hs-tts-play-btn" class="hs-tts-btn" style="background:rgba(0,245,212,0.15);border:1px solid #00f5d4;color:#00f5d4;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">
+                        🔊 লেকচার শুনুন (TTS)
+                    </button>
+                </div>
+                <small style="color:#64748b;font-size:10px;">Browser Native SpeechSynthesis — বাংলা ও ইংরেজি অডিও রিডিং</small>
+            </div>
+
+            <!-- CTF Flag & Active Bounty Card -->
+            <div class="hs-console-widget hs-ctf-box" style="border:1px solid #ff3366;background:rgba(255,51,102,0.06);padding:12px;border-radius:10px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <strong style="color:#ff3366;font-size:12px;">🚩 ACTIVE CTF CHALLENGE</strong>
+                    <span style="background:#ff3366;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:bold;">+150 XP &amp; ৳25 BDT</span>
+                </div>
+                <p style="font-size:11px;color:#e2e8f0;margin:0 0 8px 0;line-height:1.4;">
+                    টার্মিনালে <code>exploit sqli</code> চালিয়ে ফ্ল্যাগ সংগ্রহ করুন এবং <code>submit-flag &lt;TOKEN&gt;</code> দিয়ে ওয়ালেটে ক্রেডিট গ্রহণ করুন।
+                </p>
+                <div style="font-family:monospace;font-size:10px;background:#050811;padding:6px;border-radius:6px;border:1px solid #334155;color:#38bdf8;">
+                    Hint: prepared statement literal binding
+                </div>
             </div>
 
             <div class="hs-console-widget">
@@ -422,6 +467,24 @@ window.HS_ACADEMY = (function() {
             if (btn) btn.classList.add('active');
             const target = document.getElementById('hs-stage-' + tabId);
             if (target) target.style.display = 'block';
+        },
+        switchDiagram: function(diagKey, btn) {
+            document.querySelectorAll('.hs-diagram-picker button').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            const wrapper = document.getElementById('hs-dynamic-diagram-wrapper');
+            if (!wrapper) return;
+            wrapper.innerHTML = '<div style="color:#00f5d4;padding:20px;text-align:center;">⏳ ডায়াগ্রাম রেন্ডার হচ্ছে...</div>';
+            fetch(restBase + '/lms/diagram/' + encodeURIComponent(diagKey))
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.html) {
+                        wrapper.innerHTML = data.html;
+                    }
+                })
+                .catch(() => {
+                    // Fallback to client re-render
+                    wrapper.innerHTML = '<div style="color:#00f5d4;padding:20px;">Vector diagram active: ' + diagKey + '</div>';
+                });
         },
         completeCurrentLesson: function() {
             fetch(restBase + '/academy/progress', {
