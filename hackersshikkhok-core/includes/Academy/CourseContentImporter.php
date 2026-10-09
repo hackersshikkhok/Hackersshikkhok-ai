@@ -145,7 +145,21 @@ final class CourseContentImporter {
         // Attach complete course metadata
         update_post_meta( $post_id, '_hs_course_slug_id', $course_slug );
         update_post_meta( $post_id, '_hs_title_en', sanitize_text_field( (string) ( $data['titleEn'] ?? '' ) ) );
-        update_post_meta( $post_id, '_hs_category_id', sanitize_text_field( (string) ( $data['categoryId'] ?? '' ) ) );
+        
+        $category_id = sanitize_text_field( (string) ( $data['categoryId'] ?? '' ) );
+        $category_name = sanitize_text_field( (string) ( $data['categoryNameEn'] ?? $data['categoryNameBn'] ?? $category_id ) );
+        if ( ! empty( $category_id ) ) {
+            update_post_meta( $post_id, '_hs_category_id', $category_id );
+            $term = term_exists( $category_id, 'hs_faculty' );
+            if ( ! $term ) {
+                $term = wp_insert_term( $category_name, 'hs_faculty', array( 'slug' => $category_id ) );
+            }
+            if ( ! is_wp_error( $term ) ) {
+                $term_id = is_array( $term ) ? $term['term_id'] : $term;
+                wp_set_object_terms( $post_id, array( (int) $term_id ), 'hs_faculty', false );
+            }
+        }
+
         update_post_meta( $post_id, '_hs_level', (int) ( $data['level'] ?? 1 ) );
         update_post_meta( $post_id, '_hs_duration_weeks', (int) ( $data['durationWeeks'] ?? 4 ) );
         update_post_meta( $post_id, '_hs_curriculum_total_lessons', (int) ( $data['totalLessonCount'] ?? 12 ) );
