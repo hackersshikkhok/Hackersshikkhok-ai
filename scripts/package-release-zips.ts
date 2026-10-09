@@ -14,7 +14,7 @@ function createZip(sourceDir: string, outZipPath: string): Promise<number> {
       resolve(archive.pointer());
     });
 
-    archive.on('error', (err) => reject(err));
+    archive.on('error', (err: any) => reject(err));
 
     archive.pipe(output);
     archive.directory(sourceDir, path.basename(sourceDir));
