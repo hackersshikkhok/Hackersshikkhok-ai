@@ -7780,7 +7780,7 @@ export const MASTER_COURSES_CATALOG: AcademyCourseSpec[] = [
     assignmentCount: 1,
     rating: 4.9,
     enrolledCount: 1250,
-    skills: ["Security", "Engineering", "Production", "Security"],
+    skills: ["Security", "Engineering", "Production", "QA Testing"],
     version: '4.2.0'
   },
   {

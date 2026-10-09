@@ -956,9 +956,9 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
 
                     {/* Skills Badges */}
                     <div className="flex flex-wrap gap-1.5 pt-1">
-                      {course.skills.map((skill) => (
+                      {course.skills.map((skill, sIdx) => (
                         <span
-                          key={skill}
+                          key={`${course.id}-skill-${skill}-${sIdx}`}
                           className="rounded bg-slate-900 border border-slate-800 px-2 py-0.5 text-[10px] font-mono text-cyan-300"
                         >
                           {skill}
@@ -1094,9 +1094,9 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                 <div className="space-y-1.5">
                   <span className="text-xs font-bold text-slate-200">অর্জিত স্কিলসমূহ (Competencies):</span>
                   <div className="flex flex-wrap gap-1.5">
-                    {selectedCourseForDetail.skills.map((s) => (
+                    {selectedCourseForDetail.skills.map((s, sIdx) => (
                       <span
-                        key={s}
+                        key={`${selectedCourseForDetail.id}-skill-${s}-${sIdx}`}
                         className="rounded-lg bg-slate-900 border border-slate-800 px-2.5 py-1 text-xs font-mono text-cyan-300"
                       >
                         ✓ {s}
