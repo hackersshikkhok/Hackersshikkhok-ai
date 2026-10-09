@@ -2,12 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const archiverPkg = require('archiver');
+const _archiver = require('archiver');
+const archiver = _archiver.default || _archiver;
 
 function createZip(sourceDir: string, outZipPath: string): Promise<number> {
   return new Promise((resolve, reject) => {
     const output = fs.createWriteStream(outZipPath);
-    const archive = archiverPkg('zip', { zlib: { level: 9 } });
+    const archive = archiver('zip', { zlib: { level: 9 } });
 
     output.on('close', () => {
       console.log(`[ZIP] Created ${outZipPath} (${archive.pointer()} total bytes)`);
