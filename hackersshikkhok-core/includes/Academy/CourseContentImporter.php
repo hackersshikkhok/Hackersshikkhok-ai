@@ -58,33 +58,33 @@ final class CourseContentImporter {
     }
 
     /**
-     * Admin REST Handler to trigger batch/full course import
+     * Admin REST Handler to trigger chunked batch course import
      */
     public static function handle_admin_import_request( WP_REST_Request $request ): WP_REST_Response {
         $package_path = self::get_package_path();
 
         if ( ! file_exists( $package_path ) ) {
-            return new WP_REST_Response( array(
-                'success' => false,
-                'message' => 'Course content package JSON file not found at: ' . $package_path
-            ), 404 );
+            return new WP_REST_Response( array( 'success' => false, 'message' => 'Package not found' ), 404 );
         }
 
+        $batch_size = 50;
+        $offset     = (int) $request->get_param( 'offset' ) ?: 0;
+        
+        // This is a naive implementation; for real streaming large JSONs, 
+        // a streaming parser is better. But given the constraints:
         $raw_data = file_get_contents( $package_path );
         $courses  = json_decode( (string) $raw_data, true );
-
+        
         if ( ! is_array( $courses ) ) {
-            return new WP_REST_Response( array(
-                'success' => false,
-                'message' => 'Malformed course content package JSON.'
-            ), 400 );
+            return new WP_REST_Response( array( 'success' => false, 'message' => 'Malformed JSON' ), 400 );
         }
 
+        $chunk = array_slice( $courses, $offset, $batch_size );
         $imported_count = 0;
         $updated_count  = 0;
         $errors         = array();
 
-        foreach ( $courses as $course_data ) {
+        foreach ( $chunk as $course_data ) {
             $res = self::import_single_course( $course_data );
             if ( $res['status'] === 'created' ) {
                 $imported_count++;
@@ -97,11 +97,10 @@ final class CourseContentImporter {
 
         return new WP_REST_Response( array(
             'success'        => true,
-            'total_in_file'  => count( $courses ),
             'imported_new'   => $imported_count,
             'updated'        => $updated_count,
+            'next_offset'    => count( $chunk ) === $batch_size ? $offset + $batch_size : -1,
             'errors'         => $errors,
-            'timestamp'      => current_time( 'mysql' ),
         ), 200 );
     }
 

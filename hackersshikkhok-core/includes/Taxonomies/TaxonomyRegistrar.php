@@ -18,6 +18,7 @@ final class TaxonomyRegistrar {
             'hs_security_domain' => array( 'label' => 'Security Domain', 'hierarchical' => true ),
             'hs_series'          => array( 'label' => 'Learning Series', 'hierarchical' => true ),
             'hs_license'         => array( 'label' => 'Code License', 'hierarchical' => false ),
+            'hs_faculty'         => array( 'label' => 'Faculty', 'hierarchical' => true ),
         );
 
         $object_types = array( 'tutorials', 'code', 'tools', 'projects', 'cyber', 'troubleshooting', 'hs_question', 'hs_video', 'hs_course', 'hs_resource' );
