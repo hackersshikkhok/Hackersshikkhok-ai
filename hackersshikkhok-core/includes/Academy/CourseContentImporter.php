@@ -180,12 +180,38 @@ final class CourseContentImporter {
         $posts = get_posts( array(
             'post_type'      => 'hs_course',
             'post_status'    => 'publish',
-            'posts_per_page' => 100,
+            'posts_per_page' => 450,
             'orderby'        => 'date',
             'order'          => 'ASC',
         ) );
 
         $catalog = array();
+        if ( empty( $posts ) ) {
+            $pkg_path = self::get_package_path();
+            if ( file_exists( $pkg_path ) ) {
+                $raw = file_get_contents( $pkg_path );
+                $pkg = ! empty( $raw ) ? json_decode( $raw, true ) : array();
+                if ( is_array( $pkg ) ) {
+                    foreach ( $pkg as $c_item ) {
+                        $catalog[] = array(
+                            'id'            => $c_item['courseId'] ?? 'course',
+                            'post_id'       => 0,
+                            'titleBn'       => $c_item['titleBn'] ?? '',
+                            'titleEn'       => $c_item['titleEn'] ?? '',
+                            'categoryId'    => $c_item['categoryId'] ?? 'cybersecurity',
+                            'level'         => (int) ( $c_item['level'] ?? 1 ),
+                            'durationWeeks' => (int) ( $c_item['durationWeeks'] ?? 4 ),
+                            'lessonCount'   => (int) ( $c_item['totalLessonCount'] ?? 12 ),
+                            'labCount'      => (int) ( $c_item['totalLabCount'] ?? 2 ),
+                        );
+                    }
+                    return new WP_REST_Response( array(
+                        'count'   => count( $catalog ),
+                        'courses' => $catalog,
+                    ), 200 );
+                }
+            }
+        }
         foreach ( $posts as $p ) {
             $slug_id = get_post_meta( $p->ID, '_hs_course_slug_id', true ) ?: $p->post_name;
             $catalog[] = array(

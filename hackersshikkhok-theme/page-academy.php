@@ -21,7 +21,7 @@ $requested_course_id = isset( $_GET['course_id'] ) ? sanitize_text_field( (strin
 $courses_query = new WP_Query( array(
     'post_type'      => 'hs_course',
     'post_status'    => 'publish',
-    'posts_per_page' => 100,
+    'posts_per_page' => 450,
     'orderby'        => 'date',
     'order'          => 'ASC',
 ) );
@@ -32,114 +32,102 @@ $active_course_post = null;
 if ( $courses_query->have_posts() ) {
     while ( $courses_query->have_posts() ) {
         $courses_query->the_post();
-        $c_id   = get_the_ID();
-        $c_slug = get_post_meta( $c_id, '_hs_course_slug_id', true ) ?: get_post_field( 'post_name', $c_id );
+        $p_id = get_the_ID();
+        $c_slug = get_post_meta( $p_id, '_hs_course_slug_id', true ) ?: get_post_field( 'post_name', $p_id );
         
-        $c_item = array(
-            'post_id'       => $c_id,
+        $course_info = array(
+            'post_id'       => $p_id,
             'slug'          => $c_slug,
             'title'         => get_the_title(),
-            'title_en'      => get_post_meta( $c_id, '_hs_title_en', true ) ?: get_the_title(),
-            'category_id'   => get_post_meta( $c_id, '_hs_category_id', true ) ?: 'cybersecurity',
-            'level'         => (int) get_post_meta( $c_id, '_hs_level', true ) ?: 1,
-            'duration'      => (int) get_post_meta( $c_id, '_hs_duration_weeks', true ) ?: 4,
-            'total_lessons' => (int) get_post_meta( $c_id, '_hs_curriculum_total_lessons', true ) ?: 12,
-            'total_labs'    => (int) get_post_meta( $c_id, '_hs_curriculum_total_labs', true ) ?: 2,
+            'title_en'      => get_post_meta( $p_id, '_hs_title_en', true ) ?: get_the_title(),
+            'category_id'   => get_post_meta( $p_id, '_hs_category_id', true ) ?: 'cybersecurity',
+            'level'         => (int) get_post_meta( $p_id, '_hs_level', true ) ?: 1,
+            'duration'      => (int) get_post_meta( $p_id, '_hs_duration_weeks', true ) ?: 4,
+            'total_lessons' => (int) get_post_meta( $p_id, '_hs_curriculum_total_lessons', true ) ?: 12,
+            'total_labs'    => (int) get_post_meta( $p_id, '_hs_curriculum_total_labs', true ) ?: 2,
         );
-        $all_courses[] = $c_item;
+        $all_courses[] = $course_info;
 
-        if ( ! $active_course_post && ( $requested_course_id === $c_slug || (string) $c_id === $requested_course_id ) ) {
-            $active_course_post = get_post( $c_id );
+        if ( ! $active_course_post && ( $c_slug === $requested_course_id || (string) $p_id === $requested_course_id ) ) {
+            $active_course_post = get_post( $p_id );
         }
     }
     wp_reset_postdata();
 }
 
-// Fallback to first course if none explicitly matched
-if ( ! $active_course_post && ! empty( $all_courses ) ) {
+// Fallback to bundled course catalog package (400 full courses) if database has not yet been populated
+$package_active_course = null;
+if ( empty( $all_courses ) ) {
+    $pkg_path = defined( 'HACKERSSHIKKHOK_CORE_PATH' )
+        ? HACKERSSHIKKHOK_CORE_PATH . 'assets/data/full-courses-content-package.json'
+        : WP_PLUGIN_DIR . '/hackersshikkhok-core/assets/data/full-courses-content-package.json';
+
+    if ( ! file_exists( $pkg_path ) ) {
+        $fallback_pkg_path = get_template_directory() . '/../hackersshikkhok-core/assets/data/full-courses-content-package.json';
+        if ( file_exists( $fallback_pkg_path ) ) {
+            $pkg_path = $fallback_pkg_path;
+        }
+    }
+
+    if ( file_exists( $pkg_path ) ) {
+        $json_raw = file_get_contents( $pkg_path );
+        $json_data = ! empty( $json_raw ) ? json_decode( $json_raw, true ) : array();
+        if ( is_array( $json_data ) ) {
+            foreach ( $json_data as $c_item ) {
+                $c_slug = $c_item['courseId'] ?? ($c_item['slug'] ?? 'course');
+                $course_info = array(
+                    'post_id'       => 0,
+                    'slug'          => $c_slug,
+                    'title'         => $c_item['titleBn'] ?? ($c_item['titleEn'] ?? 'Course'),
+                    'title_en'      => $c_item['titleEn'] ?? '',
+                    'category_id'   => $c_item['categoryId'] ?? 'cybersecurity',
+                    'level'         => (int) ( $c_item['level'] ?? 1 ),
+                    'duration'      => (int) ( $c_item['durationWeeks'] ?? 4 ),
+                    'total_lessons' => (int) ( $c_item['totalLessonCount'] ?? 12 ),
+                    'total_labs'    => (int) ( $c_item['totalLabCount'] ?? 2 ),
+                    '_package_data' => $c_item,
+                );
+                $all_courses[] = $course_info;
+
+                if ( ! $package_active_course && ( $c_slug === $requested_course_id || empty( $requested_course_id ) ) ) {
+                    $package_active_course = $c_item;
+                }
+            }
+            if ( ! $package_active_course && ! empty( $all_courses ) ) {
+                $package_active_course = $all_courses[0]['_package_data'] ?? null;
+            }
+        }
+    }
+}
+
+// Fallback to first course if none explicitly matched in DB
+if ( ! $active_course_post && ! empty( $all_courses ) && empty( $package_active_course ) ) {
     $active_course_post = get_post( $all_courses[0]['post_id'] );
 }
 
 // Extract dynamic modules and metadata for the active course
-$active_course_id     = $active_course_post ? $active_course_post->ID : 0;
-$active_course_title  = $active_course_post ? $active_course_post->post_title : 'Cybersecurity Fundamentals & Defensive Mastery';
-$active_course_slug   = $active_course_post ? ( get_post_meta( $active_course_id, '_hs_course_slug_id', true ) ?: $active_course_post->post_name ) : 'cyber-01-foundations';
-$active_modules_json  = $active_course_post ? get_post_meta( $active_course_id, '_hs_modules_json', true ) : '';
-$active_modules       = ! empty( $active_modules_json ) ? json_decode( (string) $active_modules_json, true ) : array();
-$active_quizzes_json  = $active_course_post ? get_post_meta( $active_course_id, '_hs_quizzes_json', true ) : '';
-$active_quizzes       = ! empty( $active_quizzes_json ) ? json_decode( (string) $active_quizzes_json, true ) : array();
-
-// If no database courses imported yet, provide robust dynamic fallback structure
-if ( empty( $active_modules ) ) {
-    $active_modules = array(
-        array(
-            'moduleId' => $active_course_slug . '-mod-1',
-            'moduleNumber' => 1,
-            'moduleTitleBn' => 'মডিউল ১: ভিত্তিপ্রস্তর ও থ্রেট মডেলিং (Foundations)',
-            'lessons' => array(
-                array(
-                    'id' => $active_course_slug . '-m1-l1',
-                    'lessonNumber' => '1.1',
-                    'titleBn' => '১.১ ডিফেন্স-ইন-ডেপথ ও জিরো-ট্রাস্ট আর্কিটেকচার নীতি',
-                    'titleEn' => 'Defense-in-Depth & Zero-Trust Principles',
-                    'type' => 'Video Lecture',
-                    'duration' => '15 মিনিট',
-                    'freePreview' => true,
-                    'contentMarkdownBn' => 'ডিফেন্স-ইন-ডেপথ হলো একাধিক স্তরে নিরাপত্তা ব্যবস্থা স্থাপন করার কৌশল যাতে একটি স্তর ব্যর্থ হলেও পুরো সিস্টেম সুরক্ষিত থাকে।',
-                ),
-                array(
-                    'id' => $active_course_slug . '-m1-l2',
-                    'lessonNumber' => '1.2',
-                    'titleBn' => '১.২ সিকিউরিটি হার্ডেনিং ও ফায়ারওয়াল রুলস কনফিগারেশন',
-                    'titleEn' => 'Linux Security Hardening & Firewall Setup',
-                    'type' => 'Coding Exercise',
-                    'duration' => '20 মিনিট',
-                    'freePreview' => false,
-                    'contentMarkdownBn' => 'সার্ভার ও নেটওয়ার্ক নিরাপত্তার ভিত্তি নিশ্চিত করতে পোর্ট হার্ডেনিং ও আনইউজড সার্ভিসেস নিষ্ক্রিয় করার নিয়ম।',
-                ),
-                array(
-                    'id' => $active_course_slug . '-m1-l3',
-                    'lessonNumber' => '1.3',
-                    'titleBn' => '১.৩ হ্যান্ডস-অন ল্যাব: নেটওয়ার্ক অডিট ও সিকিউরিটি লগ বিশ্লেষণ',
-                    'titleEn' => 'Hands-on Network Audit & Log Analysis',
-                    'type' => 'Practical Lab',
-                    'duration' => '25 মিনিট',
-                    'freePreview' => false,
-                    'contentMarkdownBn' => 'আইসোলেটেড ল্যাব পরিবেশে সিস্টেম লগ পর্যবেক্ষণ করে সন্দেহজনক আক্রমণ প্যাটার্ন শনাক্তকরণ।',
-                ),
-            ),
-        ),
-        array(
-            'moduleId' => $active_course_slug . '-mod-2',
-            'moduleNumber' => 2,
-            'moduleTitleBn' => 'মডিউল ২: কোর টেকনোলজি ও হ্যান্ডস-অন ইমপ্লিমেন্টেশন',
-            'lessons' => array(
-                array(
-                    'id' => $active_course_slug . '-m2-l1',
-                    'lessonNumber' => '2.1',
-                    'titleBn' => '২.১ ইনপুট ভ্যালিডেশন, স্যানিটাইজেশন ও XSS প্রতিরোধ',
-                    'titleEn' => 'Input Validation & Context Escaping',
-                    'type' => 'Coding Exercise',
-                    'duration' => '18 মিনিট',
-                    'freePreview' => false,
-                    'contentMarkdownBn' => 'ইউজার ইনপুট কখনোই আনভ্যালিডেটেড রাখা চলবে না। কন্টেক্সট অনুযায়ী ডেটা এস্কেপিং নিশ্চিত করুন।',
-                ),
-                array(
-                    'id' => $active_course_slug . '-m2-l2',
-                    'lessonNumber' => '2.2',
-                    'titleBn' => '২.২ ক্রিপ্টোগ্রাফিক টোকেন ইন্টিগ্রিটি ও HMAC-SHA256 ভেরিফিকেশন',
-                    'titleEn' => 'HMAC Token Integrity Verification',
-                    'type' => 'Practical Lab',
-                    'duration' => '22 মিনিট',
-                    'freePreview' => false,
-                    'contentMarkdownBn' => 'কনস্ট্যান্ট-টাইম মেথড hash_equals ব্যবহার করে ট্যাম্পার-প্রুফ টোকেন ভ্যালিডেশন।',
-                ),
-            ),
-        ),
-    );
+if ( $active_course_post ) {
+    $active_course_id    = $active_course_post->ID;
+    $active_course_title = $active_course_post->post_title;
+    $active_course_slug  = get_post_meta( $active_course_id, '_hs_course_slug_id', true ) ?: $active_course_post->post_name;
+    $modules_json        = get_post_meta( $active_course_id, '_hs_modules_json', true );
+    $active_modules      = ! empty( $modules_json ) ? json_decode( (string) $modules_json, true ) : array();
+    $quizzes_json        = get_post_meta( $active_course_id, '_hs_quizzes_json', true );
+    $active_quizzes      = ! empty( $quizzes_json ) ? json_decode( (string) $quizzes_json, true ) : array();
+} elseif ( $package_active_course ) {
+    $active_course_id    = 0;
+    $active_course_title = $package_active_course['titleBn'] ?? ($package_active_course['titleEn'] ?? 'Cybersecurity Foundations');
+    $active_course_slug  = $package_active_course['courseId'] ?? ($package_active_course['slug'] ?? 'cyber-01-foundations');
+    $active_modules      = $package_active_course['modules'] ?? array();
+    $active_quizzes      = $package_active_course['quizzes'] ?? array();
+} else {
+    $active_course_id    = 0;
+    $active_course_title = 'Cybersecurity Fundamentals & Defensive Mastery';
+    $active_course_slug  = 'cyber-01-foundations';
+    $active_modules      = array();
+    $active_quizzes      = array();
 }
 
-// Active first lesson
 $first_lesson = $active_modules[0]['lessons'][0] ?? array(
     'id' => 'l1',
     'titleBn' => '১.১ পরিচিতি ও প্র্যাকটিস',
@@ -161,11 +149,22 @@ $first_lesson = $active_modules[0]['lessons'][0] ?? array(
             <div class="hs-course-picker">
                 <label for="hs-course-select" class="hs-picker-label">কোর্স নির্বাচন:</label>
                 <select id="hs-course-select" onchange="HS_ACADEMY.switchCourse(this.value)">
-                    <?php if ( ! empty( $all_courses ) ) : ?>
-                        <?php foreach ( $all_courses as $c ) : ?>
-                            <option value="<?php echo esc_attr( $c['slug'] ); ?>" <?php selected( $c['slug'], $active_course_slug ); ?>>
-                                <?php echo esc_html( $c['title'] ); ?> (Lv.<?php echo esc_html( (string) $c['level'] ); ?>)
-                            </option>
+                    <?php if ( ! empty( $all_courses ) ) : 
+                        $grouped_courses = array();
+                        foreach ( $all_courses as $c ) {
+                            $cat_key = $c['category_id'] ?? 'general';
+                            $grouped_courses[ $cat_key ][] = $c;
+                        }
+                        foreach ( $grouped_courses as $cat_key => $c_group ) :
+                            $cat_label = ucwords( str_replace( '_', ' ', $cat_key ) );
+                    ?>
+                        <optgroup label="<?php echo esc_attr( $cat_label ); ?> (<?php echo count( $c_group ); ?>)">
+                            <?php foreach ( $c_group as $c ) : ?>
+                                <option value="<?php echo esc_attr( $c['slug'] ); ?>" <?php selected( $c['slug'], $active_course_slug ); ?>>
+                                    <?php echo esc_html( $c['title'] ); ?> (Lv.<?php echo esc_html( (string) $c['level'] ); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </optgroup>
                         <?php endforeach; ?>
                     <?php else : ?>
                         <option value="<?php echo esc_attr( $active_course_slug ); ?>"><?php echo esc_html( $active_course_title ); ?></option>
