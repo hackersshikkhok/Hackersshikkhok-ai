@@ -24,49 +24,25 @@ import {
   Sliders,
   Plus,
   RefreshCw,
-  QrCode
+  QrCode,
+  Code2,
+  Briefcase,
+  Palette,
+  Cpu,
+  TrendingUp,
+  X,
+  ExternalLink,
+  ChevronRight,
+  Info
 } from 'lucide-react';
-
-export interface AcademyCourseSpec {
-  id: string;
-  slug: string;
-  titleBn: string;
-  titleEn: string;
-  subtitleBn: string;
-  levelNumber: number; // 0 to 8
-  levelLabel: string;
-  specialization:
-    | 'Foundation'
-    | 'Ethical Security Testing'
-    | 'Defensive Security (Blue Team)'
-    | 'Digital Forensics'
-    | 'OSINT & Threat Intel'
-    | 'DevSecOps & AppSec'
-    | 'Cloud & AI Security';
-  courseType: 'Free Course' | 'Certification Course' | 'Practical Lab Course' | 'Bootcamp';
-  instructor: string;
-  duration: string;
-  moduleCount: number;
-  lessonCount: number;
-  labCount: number;
-  quizCount: number;
-  assignmentCount: number;
-  rating: number;
-  enrolledCount: number;
-  prerequisiteCourseId?: string;
-  skills: string[];
-  version: string;
-}
-
-export interface CareerLearningPathSpec {
-  id: string;
-  titleBn: string;
-  titleEn: string;
-  targetRole: string;
-  courseIds: string[];
-  badgeName: string;
-  estimatedWeeks: number;
-}
+import {
+  MASTER_COURSES_CATALOG,
+  ACADEMY_CATEGORIES,
+  CAREER_LEARNING_TRACKS,
+  AcademyCourseSpec,
+  AcademyCategorySpec,
+  CareerLearningPathSpec
+} from '../data/coursesCatalog';
 
 interface LessonItem {
   id: string;
@@ -121,194 +97,14 @@ interface CertificateRecord {
 }
 
 const ACADEMY_LEVELS = [
-  { level: 0, name: 'Level 0 — Digital & Computer Foundation' },
-  { level: 1, name: 'Level 1 — Cybersecurity Foundation' },
-  { level: 2, name: 'Level 2 — Networking & Linux' },
-  { level: 3, name: 'Level 3 — Security Fundamentals' },
-  { level: 4, name: 'Level 4 — Ethical Security Testing' },
-  { level: 5, name: 'Level 5 — Advanced Security' },
-  { level: 6, name: 'Level 6 — Professional Specialization' },
-  { level: 7, name: 'Level 7 — Advanced Practical / Professional Labs' },
-  { level: 8, name: 'Level 8 — Expert / Research-Oriented Learning' }
+  { level: 0, name: 'Level 0 — Foundation' },
+  { level: 1, name: 'Level 1 — Beginner' },
+  { level: 2, name: 'Level 2 — Intermediate' },
+  { level: 3, name: 'Level 3 — Advanced / Professional' }
 ];
 
-const ACADEMY_COURSES: AcademyCourseSpec[] = [
-  {
-    id: 'course-l0-foundation',
-    slug: 'digital-networking-linux-foundation',
-    titleBn: 'কম্পিউটার, নেটওয়ার্কিং ও লিনাক্স ফাউন্ডেশন (সাইবার সিকিউরিটি বেসলাইন)',
-    titleEn: 'Computer, Networking & Linux Foundation for Cybersecurity',
-    subtitleBn: 'TCP/IP, DNS, HTTP, Linux CLI, File Permissions ও Bash অটোমেশন হাতে-কলমে শিখুন।',
-    levelNumber: 0,
-    levelLabel: 'Level 0 — Digital & Computer Foundation',
-    specialization: 'Foundation',
-    courseType: 'Free Course',
-    instructor: 'Hackers শিক্ষক (Lead Cyber Architect)',
-    duration: '১২ ঘণ্টা',
-    moduleCount: 5,
-    lessonCount: 24,
-    labCount: 4,
-    quizCount: 5,
-    assignmentCount: 2,
-    rating: 4.9,
-    enrolledCount: 4820,
-    skills: ['Linux CLI', 'TCP/IP Networking', 'DNS & HTTP', 'Bash Scripting'],
-    version: 'v2.1.0'
-  },
-  {
-    id: 'course-l2-cyber-fundamentals',
-    slug: 'cybersecurity-defensive-fundamentals',
-    titleBn: 'সাইবার সিকিউরিটি ও থ্রেট মডেলিং ফান্ডামেন্টালস (White/Blue/Purple Hat Context)',
-    titleEn: 'Cybersecurity & Threat Modeling Fundamentals',
-    subtitleBn: 'CIA Triad, OWASP, MITRE ATT&CK, অ্যাক্সেস কন্ট্রোল ও নিরাপদ ল্যাব আর্কিটেকচার।',
-    levelNumber: 1,
-    levelLabel: 'Level 1 — Cybersecurity Foundation',
-    specialization: 'Foundation',
-    courseType: 'Certification Course',
-    instructor: 'Hackers শিক্ষক (Lead Cyber Architect)',
-    duration: '১৬ ঘণ্টা',
-    moduleCount: 6,
-    lessonCount: 30,
-    labCount: 6,
-    quizCount: 6,
-    assignmentCount: 2,
-    rating: 4.95,
-    enrolledCount: 3910,
-    prerequisiteCourseId: 'course-l0-foundation',
-    skills: ['CIA Triad', 'Threat Modeling', 'Cryptography Basics', 'Security Architecture'],
-    version: 'v2.0.0'
-  },
-  {
-    id: 'course-l4-web-app-sec',
-    slug: 'authorized-web-application-security-testing',
-    titleBn: 'অথরাইজড ওয়েব অ্যাপ্লিকেশন সিকিউরিটি ও পেনটেস্টিং ল্যাব (OWASP Top 10)',
-    titleEn: 'Authorized Web Security Testing & Defensive Patching',
-    subtitleBn: 'SQLi, XSS, CSRF, SSRF, Auth Bypass শনাক্তকরণ এবং সিকিউর কোড প্যাচিং ল্যাব।',
-    levelNumber: 4,
-    levelLabel: 'Level 4 — Ethical Security Testing',
-    specialization: 'Ethical Security Testing',
-    courseType: 'Practical Lab Course',
-    instructor: 'Hackers শিক্ষক (Red/Purple Team Lead)',
-    duration: '২৪ ঘণ্টা',
-    moduleCount: 8,
-    lessonCount: 42,
-    labCount: 12,
-    quizCount: 8,
-    assignmentCount: 4,
-    rating: 5.0,
-    enrolledCount: 5430,
-    prerequisiteCourseId: 'course-l2-cyber-fundamentals',
-    skills: ['OWASP Top 10', 'Web Security Testing', 'API Security', 'Vulnerability Patching'],
-    version: 'v2.4.0'
-  },
-  {
-    id: 'course-l5-blue-team-soc',
-    slug: 'blue-team-soc-siem-incident-response',
-    titleBn: 'ব্লু-টিম SOC অ্যানালিস্ট, SIEM লগ অ্যানালাইসিস ও ইনসিডেন্ট রেসপন্স',
-    titleEn: 'Blue Team SOC Operations, SIEM & Incident Response',
-    subtitleBn: 'Auth Log তদন্ত, ব্রুট-ফোর্স ডিটেকশন, ফায়ারওয়াল হার্ডেনিং ও ফরেনসিক এভিডেন্স হ্যান্ডলিং।',
-    levelNumber: 5,
-    levelLabel: 'Level 5 — Advanced Security',
-    specialization: 'Defensive Security (Blue Team)',
-    courseType: 'Certification Course',
-    instructor: 'Hackers শিক্ষক (SOC & DFIR Specialist)',
-    duration: '২০ ঘণ্টা',
-    moduleCount: 7,
-    lessonCount: 36,
-    labCount: 10,
-    quizCount: 7,
-    assignmentCount: 3,
-    rating: 4.92,
-    enrolledCount: 2890,
-    prerequisiteCourseId: 'course-l2-cyber-fundamentals',
-    skills: ['SIEM Log Analysis', 'Incident Response', 'Threat Detection', 'Digital Forensics'],
-    version: 'v1.8.0'
-  },
-  {
-    id: 'course-l6-wp-devsecops',
-    slug: 'wordpress-php-devsecops-secure-coding',
-    titleBn: 'সিকিউর কোডিং, WordPress Plugin সিকিউরিটি ও DevSecOps পাইপলাইন',
-    titleEn: 'Secure Coding, WordPress Architecture & DevSecOps',
-    subtitleBn: 'PHP 8.2+ টাইপ সেফটি, Nonce/Capability ভেরিফিকেশন, Prepared SQL এবং CI/CD অডিট।',
-    levelNumber: 6,
-    levelLabel: 'Level 6 — Professional Specialization',
-    specialization: 'DevSecOps & AppSec',
-    courseType: 'Bootcamp',
-    instructor: 'Hackers শিক্ষক (Core Plugin Architect)',
-    duration: '১৮ ঘণ্টা',
-    moduleCount: 6,
-    lessonCount: 32,
-    labCount: 8,
-    quizCount: 6,
-    assignmentCount: 3,
-    rating: 4.97,
-    enrolledCount: 3150,
-    skills: ['Secure PHP 8.2+', 'WordPress Hardening', 'DevSecOps', 'REST API Security'],
-    version: 'v1.5.0'
-  },
-  {
-    id: 'course-l8-ai-cloud-research',
-    slug: 'cloud-container-ai-security-research',
-    titleBn: 'ক্লাউড, কন্টেইনার, OSINT ও AI সিকিউরিটি রিসার্চ ল্যাব',
-    titleEn: 'Cloud, Container, OSINT & AI Security Research',
-    subtitleBn: 'LLM Prompt Injection Defense, Container Isolation, Threat Intel ও Zero-Trust আর্কিটেকচার।',
-    levelNumber: 8,
-    levelLabel: 'Level 8 — Expert / Research-Oriented Learning',
-    specialization: 'Cloud & AI Security',
-    courseType: 'Certification Course',
-    instructor: 'Hackers শিক্ষক (Principal Security Researcher)',
-    duration: '২৮ ঘণ্টা',
-    moduleCount: 9,
-    lessonCount: 48,
-    labCount: 14,
-    quizCount: 9,
-    assignmentCount: 5,
-    rating: 4.98,
-    enrolledCount: 1940,
-    prerequisiteCourseId: 'course-l4-web-app-sec',
-    skills: ['AI Security', 'Container Isolation', 'OSINT', 'Zero-Trust Architecture'],
-    version: 'v1.2.0'
-  }
-];
-
-const CAREER_LEARNING_PATHS: CareerLearningPathSpec[] = [
-  {
-    id: 'path-beginner',
-    titleBn: '১. সাইবার সিকিউরিটি বিগিনার পাথ (Cybersecurity Beginner Path)',
-    titleEn: 'Complete Zero-to-Foundation Track',
-    targetRole: 'Junior Security Associate',
-    courseIds: ['course-l0-foundation', 'course-l2-cyber-fundamentals'],
-    badgeName: '🛡️ Cyber Foundation Defender',
-    estimatedWeeks: 6
-  },
-  {
-    id: 'path-ethical-tester',
-    titleBn: '২. ইথিক্যাল সিকিউরিটি টেস্টিং পাথ (Authorized Pentest & AppSec Path)',
-    titleEn: 'Authorized Web & Application Security Track',
-    targetRole: 'Ethical Security Tester / AppSec Analyst',
-    courseIds: ['course-l0-foundation', 'course-l2-cyber-fundamentals', 'course-l4-web-app-sec'],
-    badgeName: '⚡ Authorized Security Auditor',
-    estimatedWeeks: 12
-  },
-  {
-    id: 'path-blue-team',
-    titleBn: '৩. ব্লু-টিম ও SOC অ্যানালিস্ট পাথ (Blue Team & DFIR Career Path)',
-    titleEn: 'Defensive Monitoring, SIEM & Incident Response Track',
-    targetRole: 'SOC Analyst (Tier 1 / Tier 2)',
-    courseIds: ['course-l0-foundation', 'course-l2-cyber-fundamentals', 'course-l5-blue-team-soc'],
-    badgeName: '🔍 Blue Team SOC Guardian',
-    estimatedWeeks: 10
-  },
-  {
-    id: 'path-devsecops',
-    titleBn: '৪. সিকিউর ওয়েব ও DevSecOps ইঞ্জিনিয়ার পাথ (Secure Coding Track)',
-    titleEn: 'Full-Stack Application Security & DevSecOps Track',
-    targetRole: 'DevSecOps & Secure WordPress Engineer',
-    courseIds: ['course-l0-foundation', 'course-l4-web-app-sec', 'course-l6-wp-devsecops'],
-    badgeName: '💻 DevSecOps Master Architect',
-    estimatedWeeks: 14
-  }
-];
+const ACADEMY_COURSES = MASTER_COURSES_CATALOG;
+const CAREER_LEARNING_PATHS = CAREER_LEARNING_TRACKS;
 
 const COURSE_PLAYER_LESSONS: LessonItem[] = [
   {
@@ -501,15 +297,20 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
 
   // Workspace 1: Catalog & Filters
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<number | 'all'>('all');
   const [selectedSpecialization, setSelectedSpecialization] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'newest'>('popular');
+  const [selectedCourseForDetail, setSelectedCourseForDetail] = useState<AcademyCourseSpec | null>(null);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([
-    'course-l0-foundation',
-    'course-l2-cyber-fundamentals',
-    'course-l4-web-app-sec'
+    'cyber-01-foundations',
+    'cyber-07-linux-for-hackers',
+    'cyber-03-ethical-hacking-beginners',
+    'webdev-01-html-css-mastery',
+    'wp-01-theme-dev-scratch',
+    'ai-01-prompt-engineering'
   ]);
-  const [activeCourseId, setActiveCourseId] = useState<string>('course-l4-web-app-sec');
+  const [activeCourseId, setActiveCourseId] = useState<string>('cyber-03-ethical-hacking-beginners');
 
   // Workspace 2: 3-Column Course Player, Visual Diagram, Video Transcript & Personal Notes
   const [activeLessonId, setActiveLessonId] = useState<string>('les-2');
@@ -584,6 +385,7 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
 
   // Workspace 5: Certificate Engine, Templates, Verification & Revocation
   const [studentCertName, setStudentCertName] = useState('Md. Tanvir Hasan');
+  const [certSelectedCourseId, setCertSelectedCourseId] = useState<string>('cyber-03-ethical-hacking-beginners');
   const [selectedCertTemplate, setSelectedCertTemplate] = useState<
     'Cybersecurity' | 'Ethical Security' | 'Blue Team' | 'Professional'
   >('Ethical Security');
@@ -644,9 +446,8 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
       course.titleEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
       course.skills.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesLevel = selectedLevel === 'all' || course.levelNumber === selectedLevel;
-    const matchesSpec =
-      selectedSpecialization === 'all' || course.specialization === selectedSpecialization;
-    return matchesSearch && matchesLevel && matchesSpec;
+    const matchesCategory = selectedCategory === 'all' || course.categoryId === selectedCategory;
+    return matchesSearch && matchesLevel && matchesCategory;
   }).sort((a, b) => {
     if (sortBy === 'popular') return b.enrolledCount - a.enrolledCount;
     if (sortBy === 'rating') return b.rating - a.rating;
@@ -654,7 +455,7 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
   });
 
   const activeCourse =
-    ACADEMY_COURSES.find((c) => c.id === activeCourseId) || ACADEMY_COURSES[2];
+    ACADEMY_COURSES.find((c) => c.id === activeCourseId) || ACADEMY_COURSES[0];
   const activeLesson =
     COURSE_PLAYER_LESSONS.find((l) => l.id === activeLessonId) || COURSE_PLAYER_LESSONS[1];
 
@@ -683,7 +484,13 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
 
     if (raw === 'help') {
       output =
-        'Available Authorized Commands:\n  1. grep "Failed password" /var/log/auth.log\n  2. ufw status verbose\n  3. ufw allow 443/tcp && ufw deny 23/tcp\n  4. submit-flag HS{BLUE_TEAM_SIEM_DEFENDER_2026}';
+        'Available Multi-Disciplinary Commands:\n' +
+        '  [Cyber]  grep "Failed password" /var/log/auth.log\n' +
+        '  [Cyber]  ufw status verbose\n' +
+        '  [Cyber]  submit-flag HS{BLUE_TEAM_SIEM_DEFENDER_2026}\n' +
+        '  [WebDev] npm test | git status | curl -I https://hackersshikkhok.com\n' +
+        '  [WP]     wp plugin list | wp core verify-checksums\n' +
+        '  [AI/Py]  python3 ai_agent.py | pip list';
     } else if (raw.includes('/var/log/auth.log')) {
       output =
         'Sep 30 20:14:02 lab-sshd[4192]: Failed password for root from 198.51.100.77 port 51204 ssh2 (142 attempts)\n[!] Brute-force pattern identified from 198.51.100.77 -> Task 1 Complete!';
@@ -700,8 +507,27 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
       setLabTasksCompleted({ inspectLog: true, checkFirewall: true, captureFlag: true });
       setLabCompletedBanner(true);
       onEarnPoints?.(150, 'সাইবার সিকিউরিটি প্র্যাকটিক্যাল ল্যাব ফ্ল্যাগ ভেরিফিকেশন সম্পন্ন!');
+    } else if (raw.includes('wp plugin list')) {
+      output =
+        '+----------------------+----------+-----------+---------+\n' +
+        '| name                 | status   | update    | version |\n' +
+        '+----------------------+----------+-----------+---------+\n' +
+        '| hackersshikkhok-core | active   | none      | 4.0.0   |\n' +
+        '| hs-cyber-academy-lms | active   | none      | 2.5.0   |\n' +
+        '+----------------------+----------+-----------+---------+\n' +
+        '✓ Core plugins active and verified with Object-Level Auth.';
+    } else if (raw.includes('wp core')) {
+      output = 'Success: WordPress installation verifies against checksums. Zero unauthorized modifications.';
+    } else if (raw.includes('git status')) {
+      output = 'On branch main\nYour branch is up to date with origin/main.\nNothing to commit, working tree clean (All 80+ courses catalog indexed).';
+    } else if (raw.includes('npm test')) {
+      output = '> hackersshikkhok@4.0.0 test\n> vitest run\n✓ 80 LMS courses schema validation passed\n✓ 520 Tools executed successfully (0 errors)';
+    } else if (raw.includes('python3') || raw.includes('python')) {
+      output = 'Python 3.12.2 (Sandboxed Environment)\n[AI Prompt Engine] Model: gemini-2.5-flash / Zero-Trust Sanitizer\nQuality Gate Score: 96/100 -> Generated Technical Blueprint.';
+    } else if (raw.includes('curl')) {
+      output = 'HTTP/2 200 OK\nserver: HackersShikkhok-Shield/4.0\nstrict-transport-security: max-age=31536000\nx-frame-options: SAMEORIGIN\nx-content-type-options: nosniff';
     } else {
-      output = `[Sandbox Shell] Executed "${raw}" in isolated container (No production server access). Try "help" for guided tasks.`;
+      output = `[Sandbox Shell] Executed "${raw}" in isolated container (No production server access). Try "help" for multi-disciplinary commands.`;
     }
 
     setTerminalHistory((prev) => [...prev, { cmd: raw, output, status }]);
@@ -950,7 +776,65 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
             </span>
           </div>
 
-          {/* Search, Level 0-8 Filter & Specialization Bar */}
+          {/* 8 Multi-Disciplinary Academy Categories Filter */}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="text-xs font-mono text-[#00f5d4]">
+                  8 MULTI-DISCIPLINARY FACULTIES · 80+ PRODUCTION-READY COURSES
+                </span>
+                <h3 className="text-lg font-bold text-white mt-0.5">
+                  🎓 বহুবিষয়ক অনুষদ ও কোর্স ক্যাটালগ (All 8 Academic Disciplines)
+                </h3>
+              </div>
+              <span className="text-xs font-mono text-slate-400">
+                Total: {MASTER_COURSES_CATALOG.length}টি লাইভ কোর্স উপলব্ধ
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className={`rounded-xl p-2.5 text-center border transition cursor-pointer flex flex-col items-center justify-center gap-1 ${
+                  selectedCategory === 'all'
+                    ? 'border-[#00f5d4] bg-[#00f5d4]/20 text-[#00f5d4] shadow-lg shadow-[#00f5d4]/10 font-bold'
+                    : 'border-slate-800 bg-slate-950/80 text-slate-400 hover:text-white hover:border-slate-700'
+                }`}
+              >
+                <BookOpen className="h-4 w-4" />
+                <span className="text-xs font-bold">সমস্ত অনুষদ</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">
+                  {MASTER_COURSES_CATALOG.length}টি
+                </span>
+              </button>
+              {ACADEMY_CATEGORIES.map((cat) => {
+                const isSelected = selectedCategory === cat.id;
+                const count = MASTER_COURSES_CATALOG.filter((c) => c.categoryId === cat.id).length;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`rounded-xl p-2.5 text-center border transition cursor-pointer flex flex-col items-center justify-center gap-1 ${
+                      isSelected
+                        ? 'border-[#00f5d4] bg-[#00f5d4]/15 text-white shadow-lg shadow-[#00f5d4]/15 font-bold'
+                        : 'border-slate-800 bg-slate-950/80 text-slate-400 hover:text-white hover:border-slate-700'
+                    }`}
+                    style={isSelected ? { borderColor: cat.color } : {}}
+                  >
+                    <span className="text-xs font-bold truncate max-w-full" style={{ color: cat.color }}>
+                      {cat.badge}
+                    </span>
+                    <span className="text-[11px] font-medium line-clamp-1">{cat.nameEn.split(' ')[0]}</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">
+                      {count} কোর্স
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Search, Category, Level & Sorting Bar */}
           <div className="grid grid-cols-1 gap-3 md:grid-cols-12 rounded-2xl border border-slate-800 bg-[#0b1120] p-4">
             <div className="md:col-span-5 relative">
               <Search className="h-4 w-4 text-slate-400 absolute left-3.5 top-3" />
@@ -958,12 +842,27 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="কোর্স, স্কিল (OWASP, SIEM, Linux, PHP) বা টপিক খুঁজুন..."
+                placeholder="কোর্স, স্কিল (OWASP, React, WordPress, AI, SEO) বা বিষয় খুঁজুন..."
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 pl-10 pr-4 py-2 text-xs text-white focus:border-[#00f5d4] focus:outline-none"
               />
             </div>
 
             <div className="md:col-span-3">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white"
+              >
+                <option value="all">সকল ক্যাটাগরি (৮টি অনুষদ)</option>
+                {ACADEMY_CATEGORIES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nameBn}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
               <select
                 value={selectedLevel}
                 onChange={(e) =>
@@ -971,7 +870,7 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                 }
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white"
               >
-                <option value="all">সকল লেভেল (Level 0 — Level 8)</option>
+                <option value="all">সকল লেভেল</option>
                 {ACADEMY_LEVELS.map((l) => (
                   <option key={l.level} value={l.level}>
                     {l.name}
@@ -982,30 +881,30 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
 
             <div className="md:col-span-2">
               <select
-                value={selectedSpecialization}
-                onChange={(e) => setSelectedSpecialization(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white"
-              >
-                <option value="all">সকল স্পেশালাইজেশন</option>
-                <option value="Foundation">Foundation</option>
-                <option value="Ethical Security Testing">Ethical Security Testing</option>
-                <option value="Defensive Security (Blue Team)">Defensive Blue Team</option>
-                <option value="DevSecOps & AppSec">DevSecOps &amp; AppSec</option>
-                <option value="Cloud & AI Security">Cloud &amp; AI Security</option>
-              </select>
-            </div>
-
-            <div className="md:col-span-2">
-              <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-[#00f5d4] font-bold"
               >
-                <option value="popular">Sort: Most Enrolled</option>
-                <option value="rating">Sort: Highest Rated</option>
-                <option value="newest">Sort: Advanced Level</option>
+                <option value="popular">জনপ্রিয়তা (Enrolled)</option>
+                <option value="rating">রেটিং (Highest)</option>
+                <option value="newest">লেভেল (Advanced)</option>
               </select>
             </div>
+          </div>
+
+          {/* Showing Count */}
+          <div className="flex items-center justify-between text-xs text-slate-400">
+            <span>
+              প্রদর্শিত হচ্ছে: <strong className="text-white">{filteredCourses.length}</strong>টি কোর্স (মোট {MASTER_COURSES_CATALOG.length}টির মধ্যে)
+            </span>
+            {selectedCategory !== 'all' && (
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className="text-[#00f5d4] underline cursor-pointer"
+              >
+                ফিল্টার ক্লিয়ার করুন
+              </button>
+            )}
           </div>
 
           {/* Course Cards Grid */}
@@ -1015,26 +914,45 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
               const prereqLocked =
                 course.prerequisiteCourseId &&
                 !enrolledCourseIds.includes(course.prerequisiteCourseId);
+              const categoryMeta = ACADEMY_CATEGORIES.find((c) => c.id === course.categoryId);
 
               return (
                 <div
                   key={course.id}
-                  className="rounded-2xl border border-slate-800 bg-[#0b1120] p-5 flex flex-col justify-between hover:border-[#00f5d4]/50 transition shadow-lg"
+                  className="rounded-2xl border border-slate-800 bg-[#0b1120] p-5 flex flex-col justify-between hover:border-[#00f5d4]/50 transition shadow-lg group"
                 >
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="rounded-lg bg-[#00f5d4]/15 border border-[#00f5d4]/40 px-2.5 py-0.5 text-[11px] font-mono font-bold text-[#00f5d4]">
-                        Level {course.levelNumber} · {course.courseType}
+                      <span
+                        className="rounded-lg px-2.5 py-0.5 text-[11px] font-mono font-bold border"
+                        style={{
+                          backgroundColor: `${categoryMeta?.color || '#00f5d4'}15`,
+                          borderColor: `${categoryMeta?.color || '#00f5d4'}50`,
+                          color: categoryMeta?.color || '#00f5d4'
+                        }}
+                      >
+                        {course.categoryLabelBn}
                       </span>
                       <span className="text-xs font-mono text-amber-400 font-bold">
                         ★ {course.rating} ({course.enrolledCount})
                       </span>
                     </div>
 
-                    <h3 className="text-base font-extrabold text-white leading-snug">
-                      {course.titleBn}
-                    </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">{course.subtitleBn}</p>
+                    <div>
+                      <div className="text-[11px] font-mono text-slate-400">
+                        Level {course.levelNumber} · {course.courseType}
+                      </div>
+                      <h3 className="text-base font-extrabold text-white leading-snug group-hover:text-[#00f5d4] transition mt-0.5">
+                        {course.titleBn}
+                      </h3>
+                      <div className="text-xs text-slate-400 font-mono mt-0.5">
+                        {course.titleEn}
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
+                      {course.subtitleBn}
+                    </p>
 
                     {/* Skills Badges */}
                     <div className="flex flex-wrap gap-1.5 pt-1">
@@ -1071,7 +989,14 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setSelectedCourseForDetail(course)}
+                        className="rounded-xl border border-slate-700 bg-slate-900/90 px-3 py-2 text-xs font-bold text-slate-200 hover:border-[#00f5d4] hover:text-white transition cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <Info className="h-3.5 w-3.5 text-[#00f5d4]" /> সিলেবাস
+                      </button>
+
                       {prereqLocked ? (
                         <button
                           onClick={() =>
@@ -1079,9 +1004,9 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                               '🔒 এই কোর্সে ভর্তির আগে এর Prerequisite ফাউন্ডেশন কোর্সটি সম্পন্ন বা এনরোল করুন।'
                             )
                           }
-                          className="w-full rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-300 flex items-center justify-center gap-1 cursor-pointer"
                         >
-                          <Lock className="h-3.5 w-3.5" /> Prerequisite Required
+                          <Lock className="h-3.5 w-3.5" /> Prereq
                         </button>
                       ) : isEnrolled ? (
                         <button
@@ -1089,9 +1014,9 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                             setActiveCourseId(course.id);
                             setActiveWorkspace('course_player');
                           }}
-                          className="w-full rounded-xl bg-[#00f5d4] px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-[#00f5d4]/90 cursor-pointer"
+                          className="rounded-xl bg-[#00f5d4] px-3 py-2 text-xs font-extrabold text-slate-950 hover:bg-[#00f5d4]/90 cursor-pointer"
                         >
-                          ▶️ Continue Learning (Open Player)
+                          ▶️ প্লেয়ার
                         </button>
                       ) : (
                         <button
@@ -1101,9 +1026,9 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                             onEarnPoints?.(30, `${course.titleEn} কোর্সে এনরোলমেন্ট বোনাস!`);
                             onNotify?.(`🎉 সফলভাবে "${course.titleBn}" কোর্সে এনরোল হয়েছেন!`);
                           }}
-                          className="w-full rounded-xl border border-[#00f5d4] bg-[#00f5d4]/15 px-4 py-2 text-xs font-extrabold text-[#00f5d4] hover:bg-[#00f5d4] hover:text-slate-950 transition cursor-pointer"
+                          className="rounded-xl border border-[#00f5d4] bg-[#00f5d4]/15 px-3 py-2 text-xs font-extrabold text-[#00f5d4] hover:bg-[#00f5d4] hover:text-slate-950 transition cursor-pointer"
                         >
-                          + এখনই এনরোল করুন (Instant Enroll)
+                          + এনরোল
                         </button>
                       )}
                     </div>
@@ -1113,19 +1038,152 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
             })}
           </div>
 
-          {/* Structured Career Learning Paths (Sections 5, 59, 115) */}
+          {/* Modal: Interactive Course Syllabus & Curriculum Breakdown Drawer */}
+          {selectedCourseForDetail && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+              <div className="relative w-full max-w-2xl rounded-2xl border border-[#00f5d4]/40 bg-[#0b1120] p-6 space-y-5 shadow-2xl my-8">
+                <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-4">
+                  <div>
+                    <span className="rounded-lg bg-[#00f5d4]/15 border border-[#00f5d4]/40 px-2.5 py-0.5 text-[11px] font-mono font-bold text-[#00f5d4]">
+                      {selectedCourseForDetail.categoryLabelBn} · Level {selectedCourseForDetail.levelNumber}
+                    </span>
+                    <h3 className="text-xl font-extrabold text-white mt-1.5 leading-snug">
+                      {selectedCourseForDetail.titleBn}
+                    </h3>
+                    <div className="text-xs text-slate-400 font-mono">
+                      {selectedCourseForDetail.titleEn}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedCourseForDetail(null)}
+                    className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  {selectedCourseForDetail.subtitleBn}
+                </p>
+
+                {/* Course Metrics Overview */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <span className="text-slate-400 block text-[11px]">মেয়াদ ও সময়</span>
+                    <strong className="text-amber-300 font-mono">{selectedCourseForDetail.duration}</strong>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <span className="text-slate-400 block text-[11px]">মডিউল ও লেসন</span>
+                    <strong className="text-[#00f5d4] font-mono">
+                      {selectedCourseForDetail.moduleCount} M / {selectedCourseForDetail.lessonCount} L
+                    </strong>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <span className="text-slate-400 block text-[11px]">হ্যান্ডস-অন ল্যাব</span>
+                    <strong className="text-emerald-300 font-mono">
+                      {selectedCourseForDetail.labCount}টি প্র্যাকটিক্যাল
+                    </strong>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <span className="text-slate-400 block text-[11px]">কোর্স টাইপ</span>
+                    <strong className="text-purple-300 font-mono">{selectedCourseForDetail.courseType}</strong>
+                  </div>
+                </div>
+
+                {/* Skills Acquired */}
+                <div className="space-y-1.5">
+                  <span className="text-xs font-bold text-slate-200">অর্জিত স্কিলসমূহ (Competencies):</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedCourseForDetail.skills.map((s) => (
+                      <span
+                        key={s}
+                        className="rounded-lg bg-slate-900 border border-slate-800 px-2.5 py-1 text-xs font-mono text-cyan-300"
+                      >
+                        ✓ {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Detailed Curriculum Modules */}
+                <div className="space-y-2">
+                  <span className="text-xs font-bold text-slate-200">
+                    বিস্তারিত কারিকুলাম ও সিলেবাস ব্রেকডাউন:
+                  </span>
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                    {selectedCourseForDetail.curriculumOverview ? (
+                      selectedCourseForDetail.curriculumOverview.map((m, idx) => (
+                        <div key={idx} className="rounded-xl border border-slate-800 bg-slate-950 p-3 space-y-1">
+                          <div className="text-xs font-extrabold text-[#00f5d4]">{m.moduleTitle}</div>
+                          <ul className="text-[11px] text-slate-300 list-disc list-inside space-y-0.5">
+                            {m.topics.map((t, tidx) => (
+                              <li key={tidx}>{t}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 space-y-1.5 text-xs text-slate-300">
+                        <div className="font-bold text-[#00f5d4]">
+                          মডিউল ১–{selectedCourseForDetail.moduleCount}: তাত্ত্বিক ও ব্যবহারিক শিখন
+                        </div>
+                        <p className="text-[11px] text-slate-400">
+                          এই কোর্সে মোট {selectedCourseForDetail.moduleCount}টি মডিউলে {selectedCourseForDetail.lessonCount}টি মাল্টিমিডিয়া লেসন, {selectedCourseForDetail.labCount}টি সেফ স্যান্ডবক্স ল্যাব এবং আন্তর্জাতিক স্ট্যান্ডার্ডের ফাইনাল সার্টিফিকেশন এক্সাম অন্তর্ভুক্ত।
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Instructor & Actions Footer */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
+                  <div className="text-xs text-slate-400">
+                    ইন্সট্রাক্টর: <strong className="text-white">{selectedCourseForDetail.instructor}</strong>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const cid = selectedCourseForDetail.id;
+                        if (!enrolledCourseIds.includes(cid)) {
+                          setEnrolledCourseIds((prev) => [...prev, cid]);
+                          onEarnPoints?.(30, `${selectedCourseForDetail.titleEn} এনরোলমেন্ট বোনাস!`);
+                          onNotify?.(`🎉 সফলভাবে "${selectedCourseForDetail.titleBn}" কোর্সে এনরোল হয়েছেন!`);
+                        }
+                        setActiveCourseId(cid);
+                        setSelectedCourseForDetail(null);
+                        setActiveWorkspace('course_player');
+                      }}
+                      className="rounded-xl bg-[#00f5d4] px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-[#00f5d4]/90 cursor-pointer"
+                    >
+                      {enrolledCourseIds.includes(selectedCourseForDetail.id)
+                        ? '▶️ প্লেয়ার খুলুন'
+                        : '+ এনরোল করে শুরু করুন'}
+                    </button>
+                    <button
+                      onClick={() => setSelectedCourseForDetail(null)}
+                      className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-300 hover:text-white cursor-pointer"
+                    >
+                      বন্ধ করুন
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Structured Career Learning Paths (All 8 Multi-Disciplinary Tracks) */}
           <div className="rounded-2xl border border-slate-800 bg-[#0b1120] p-5 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <span className="text-xs font-mono text-[#00f5d4]">
-                  SECTIONS 5, 59 &amp; 115 · CAREER-ORIENTED LEARNING PATHS
+                  8 DISCIPLINARY CAREER LEARNING TRACKS · GUIDED ROADMAPS
                 </span>
                 <h3 className="text-lg font-extrabold text-white mt-0.5">
-                  🧭 কেরিয়ার-ভিত্তিক গাইডেড লার্নিং পাথ (Step-by-Step Roadmap to Certification)
+                  🧭 ৮টি পূর্ণাঙ্গ কেরিয়ার ট্র্যাক ও গাইডেড লার্নিং রোডম্যাপ
                 </h3>
               </div>
               <span className="text-xs font-mono text-slate-400">
-                4 Active Career Tracks · Prerequisite Linked
+                8 Active Multi-Disciplinary Tracks · Prerequisite Linked
               </span>
             </div>
 
@@ -1139,39 +1197,54 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                 return (
                   <div
                     key={path.id}
-                    className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-3"
+                    className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-3 flex flex-col justify-between"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="text-sm font-extrabold text-white">{path.titleBn}</div>
-                        <div className="text-xs text-slate-400">
-                          Target Career Role:{' '}
-                          <strong className="text-[#00f5d4]">{path.targetRole}</strong> ·{' '}
-                          {path.estimatedWeeks} Weeks
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="text-sm font-extrabold text-white">{path.titleBn}</div>
+                          <div className="text-xs text-slate-400 mt-0.5">
+                            Target Career Role:{' '}
+                            <strong className="text-[#00f5d4]">{path.targetRole}</strong> ·{' '}
+                            {path.estimatedWeeks} Weeks
+                          </div>
                         </div>
+                        <span className="rounded-lg bg-purple-500/15 border border-purple-500/30 px-2.5 py-1 text-[11px] font-mono font-bold text-purple-300 shrink-0">
+                          {path.badgeName}
+                        </span>
                       </div>
-                      <span className="rounded-lg bg-purple-500/15 border border-purple-500/30 px-2.5 py-1 text-[11px] font-mono font-bold text-purple-300">
-                        {path.badgeName}
-                      </span>
+
+                      {path.descriptionBn && (
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                          {path.descriptionBn}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#00f5d4] to-purple-500"
-                        style={{ width: `${pathPct}%` }}
-                      />
-                    </div>
+                    <div className="space-y-2 pt-2 border-t border-slate-900">
+                      <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#00f5d4] to-purple-500"
+                          style={{ width: `${pathPct}%` }}
+                        />
+                      </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <span className="font-mono text-slate-300">
-                        Progress: {completedInPath}/{path.courseIds.length} Courses ({pathPct}%)
-                      </span>
-                      <button
-                        onClick={() => setActiveWorkspace('course_player')}
-                        className="text-[#00f5d4] font-extrabold hover:underline cursor-pointer"
-                      >
-                        পাথ শুরু করুন →
-                      </button>
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span className="font-mono text-slate-300">
+                          Progress: {completedInPath}/{path.courseIds.length} Courses ({pathPct}%)
+                        </span>
+                        <button
+                          onClick={() => {
+                            if (path.courseIds.length > 0) {
+                              setActiveCourseId(path.courseIds[0]);
+                            }
+                            setActiveWorkspace('course_player');
+                          }}
+                          className="text-[#00f5d4] font-extrabold hover:underline cursor-pointer"
+                        >
+                          পাথ শুরু করুন →
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1662,6 +1735,10 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                   'help',
                   'grep "Failed password" /var/log/auth.log',
                   'ufw status verbose',
+                  'wp plugin list',
+                  'git status',
+                  'npm test',
+                  'python3 ai_agent.py',
                   'submit-flag HS{BLUE_TEAM_SIEM_DEFENDER_2026}'
                 ].map((quickCmd) => (
                   <button
@@ -1669,7 +1746,7 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                     onClick={() => setTerminalCmdInput(quickCmd)}
                     className="rounded bg-slate-900 border border-slate-700 px-2 py-1 text-[10px] font-mono text-cyan-300 hover:border-[#00f5d4] cursor-pointer"
                   >
-                    {quickCmd.slice(0, 22)}
+                    {quickCmd.length > 20 ? quickCmd.slice(0, 18) + '..' : quickCmd}
                   </button>
                 ))}
               </div>
@@ -1902,6 +1979,24 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
               </div>
             </div>
 
+            {/* Select Course for Certificate */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-300">
+                সার্টিফিকেটের জন্য কোর্স নির্বাচন করুন (Course for Diploma):
+              </label>
+              <select
+                value={certSelectedCourseId}
+                onChange={(e) => setCertSelectedCourseId(e.target.value)}
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-[#00f5d4] font-bold"
+              >
+                {MASTER_COURSES_CATALOG.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    [{c.categoryLabelBn.split(' ')[0]}] {c.titleBn}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="flex flex-wrap items-center gap-3">
               <input
                 type="text"
@@ -1911,13 +2006,18 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
                 className="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-xs text-white"
               />
               <button
-                onClick={() =>
+                onClick={() => {
+                  const targetCourse =
+                    MASTER_COURSES_CATALOG.find((c) => c.id === certSelectedCourseId) ||
+                    activeCourse;
                   handleDownloadCertificatePng({
                     ...certificates[0],
+                    courseTitle: targetCourse.titleBn,
+                    levelLabel: `Level ${targetCourse.levelNumber} — ${targetCourse.courseType}`,
                     studentName: studentCertName,
                     templateStyle: selectedCertTemplate
-                  })
-                }
+                  });
+                }}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-[#00f5d4] px-4 py-2 text-xs font-extrabold text-slate-950 cursor-pointer"
               >
                 <Download className="h-4 w-4" />
@@ -1926,28 +2026,36 @@ export const CyberAcademyAndLmsHub: React.FC<CyberAcademyAndLmsHubProps> = ({
             </div>
 
             {/* Live Visual Certificate Preview Box */}
-            <div className="rounded-2xl border-2 border-[#00f5d4] bg-gradient-to-br from-[#050811] via-[#0b132b] to-[#1a103c] p-6 text-center space-y-3 shadow-2xl">
-              <div className="text-xs font-mono font-bold text-[#00f5d4] tracking-widest uppercase">
-                HACKERS শিক্ষক CYBERSECURITY ACADEMY · {selectedCertTemplate.toUpperCase()} DIPLOMA
-              </div>
-              <h4 className="text-2xl font-extrabold text-white tracking-wide">
-                CERTIFICATE OF COMPLETION
-              </h4>
-              <p className="text-xs text-slate-400">This is to certify that</p>
-              <div className="text-2xl font-extrabold text-[#00f5d4]">{studentCertName}</div>
-              <p className="text-xs text-slate-300 max-w-xl mx-auto">
-                has successfully completed all lessons, authorized security labs, assignments and
-                final examination for
-              </p>
-              <div className="text-sm font-extrabold text-white">
-                {certificates[0].courseTitle}
-              </div>
-              <div className="pt-3 border-t border-slate-800/90 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-300">
-                <span>ID: {certificates[0].certId}</span>
-                <span className="text-emerald-300">Status: {certificates[0].status}</span>
-                <span>Verify: /academy/certificate/{certificates[0].certId}</span>
-              </div>
-            </div>
+            {(() => {
+              const currentCertCourse =
+                MASTER_COURSES_CATALOG.find((c) => c.id === certSelectedCourseId) || activeCourse;
+              return (
+                <div className="rounded-2xl border-2 border-[#00f5d4] bg-gradient-to-br from-[#050811] via-[#0b132b] to-[#1a103c] p-6 text-center space-y-3 shadow-2xl">
+                  <div className="text-xs font-mono font-bold text-[#00f5d4] tracking-widest uppercase">
+                    HACKERS শিক্ষক ACADEMY · {selectedCertTemplate.toUpperCase()} DIPLOMA
+                  </div>
+                  <h4 className="text-2xl font-extrabold text-white tracking-wide">
+                    CERTIFICATE OF COMPLETION
+                  </h4>
+                  <p className="text-xs text-slate-400">This is to certify that</p>
+                  <div className="text-2xl font-extrabold text-[#00f5d4]">{studentCertName}</div>
+                  <p className="text-xs text-slate-300 max-w-xl mx-auto">
+                    has successfully completed all lessons, practical labs, assessments and final examination for
+                  </p>
+                  <div className="text-sm font-extrabold text-white">
+                    {currentCertCourse.titleBn}
+                  </div>
+                  <div className="text-xs font-mono text-cyan-300">
+                    {currentCertCourse.titleEn}
+                  </div>
+                  <div className="pt-3 border-t border-slate-800/90 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-300">
+                    <span>ID: {certificates[0].certId}</span>
+                    <span className="text-emerald-300">Status: {certificates[0].status}</span>
+                    <span>Verify: /academy/certificate/{certificates[0].certId}</span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Right 5 Cols: Public Certificate Verification & Admin Revocation Portal */}
